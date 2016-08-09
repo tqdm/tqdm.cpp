@@ -8,42 +8,35 @@ LDLIBS =
 AR = ar
 ARFLAGS = rcs
 
-
 # Project variables
 WARNINGS = -Werror -Wall -Wextra -Wunused -Wformat=2
 
-# No end-user servicable parts below.
-
 override CFLAGS += -std=c99 -fPIC
 override CXXFLAGS += -std=c++11 -fPIC
-
-override CPPFLAGS += -I ./include/
+override CPPFLAGS += -I./include/
 
 .DEFAULT_GOAL = all
 
 BIN_SOURCES := src/main.cpp
 LIB_SOURCES := $(filter-out ${BIN_SOURCES},$(wildcard src/*.cpp))
-TEST_SOURCES := $(wildcard test/*.cpp test/*.c)
-INTERNAL_HEADERS := $(wildcard src/*.hpp)
-PUBLIC_HEADERS := $(wildcard include/tqdm/*.hpp include/tqdm/*.h)
-
+TEST_SOURCES := $(wildcard test/*.cpp)
+INTERNAL_HEADERS := $(wildcard src/*.h)
+PUBLIC_HEADERS := $(wildcard include/tqdm/*.h)
 BIN_OBJECTS := $(patsubst %,obj/%.o,${BIN_SOURCES})
 LIB_OBJECTS := $(patsubst %,obj/%.o,${LIB_SOURCES})
 TEST_OBJECTS := $(patsubst %,obj/%.o,${TEST_SOURCES})
 
 BIN := bin/tqdm
 LIB := lib/libtqdm.a
-# The second foreach is just a poor man's scoped variable binding.
+# second foreach is equivalent to scoped variable binding
 TESTS := $(foreach test_obj,${TEST_OBJECTS},$(foreach test_bin,$(basename $(patsubst obj/%.o,bin/%,${test_obj})),${test_bin} $(eval ${test_bin}: ${test_obj} ${LIB})))
-
 TEST_RUNS := $(patsubst bin/%,run/%,${TESTS})
-.PHONY: ${TEST_RUNS}
 
 MKDIR_FIRST = @mkdir -p ${@D}
 RM_FIRST = @rm -f $@
 
+.PHONY: ${TEST_RUNS}
 all: ${BIN} ${LIB}
-
 test: ${TEST_RUNS}
 tests: ${TESTS}
 

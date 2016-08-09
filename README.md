@@ -3,7 +3,7 @@
 tqdm
 ====
 
-C++ port of the popular python module. Work in progress (pre-alpha)
+C++ port of the popular python module, [tqdm](https://tqdm.github.io). Work in progress (pre-alpha)
 
 <!--
 ![][Build-Status] ![][Coverage-Status] ![][Branch-Coverage-Status]
@@ -11,7 +11,7 @@ C++ port of the popular python module. Work in progress (pre-alpha)
 ![][DOI-URI]
 -->
 
-![][Licence]
+![][License]
 
 `tqdm` (read taqadum, تقدّم) means "progress" in arabic.
 
@@ -55,12 +55,12 @@ See the
 file for more information.
 
 
-Licence
+License
 -------
 
-Open Source (OSI approved): ![][Licence]
+Open Source (OSI approved): 
 
-
+![][License]
 ![][Readme-Hits] (Since 19 May 2016)
 
   [Logo]: https://raw.githubusercontent.com/tqdm/tqdm/master/logo.png
@@ -68,5 +68,5 @@ Open Source (OSI approved): ![][Licence]
   [Github-Status]: https://img.shields.io/github/tag/tqdm/tqdm.cpp.svg?maxAge=2592000 "https://github.com/tqdm/tqdm.cpp/releases"
   [Github-Forks]: https://img.shields.io/github/forks/tqdm/tqdm.cpp.svg "https://github.com/tqdm/tqdm.cpp/network"
   [Github-Stars]: https://img.shields.io/github/stars/tqdm/tqdm.cpp.svg "https://github.com/tqdm/tqdm.cpp/stargazers"
-  [Licence]: https://img.shields.io/pypi/l/tqdm.svg "https://raw.githubusercontent.com/tqdm/tqdm.cpp/master/LICENCE"
+  [License]: https://img.shields.io/pypi/l/tqdm.svg "https://raw.githubusercontent.com/tqdm/tqdm.cpp/master/LICENSE"
   [Readme-Hits]: http://hitt.herokuapp.com/tqdm/tqdm_cpp.svg

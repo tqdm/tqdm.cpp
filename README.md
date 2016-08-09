@@ -5,6 +5,8 @@ tqdm
 
 C++ port of the popular python module, [tqdm](https://github/tqdm/tqdm). Work in progress (pre-alpha)
 
+![][Coverage-Status]
+
 <!--
 ![][Build-Status] ![][Coverage-Status] ![][Branch-Coverage-Status]
 
@@ -70,3 +72,4 @@ Open Source (OSI approved): ![][Licence]
   [Github-Stars]: https://img.shields.io/github/stars/tqdm/tqdm.cpp.svg "https://github.com/tqdm/tqdm.cpp/stargazers"
   [Licence]: https://img.shields.io/pypi/l/tqdm.svg "https://raw.githubusercontent.com/tqdm/tqdm.cpp/master/LICENCE"
   [Readme-Hits]: http://hitt.herokuapp.com/tqdm/tqdm_cpp.svg
+  [Coverage Status]: https://coveralls.io/repos/github/tqdm/tqdm.cpp/badge.svg?branch=master "https://coveralls.io/github/tqdm/tqdm.cpp?branch=master"

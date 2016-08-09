@@ -1,4 +1,4 @@
-![Logo]
+![][Logo]
 
 tqdm
 ====
@@ -6,12 +6,12 @@ tqdm
 C++ port of the popular python module. Work in progress (pre-alpha)
 
 <!--
-![Build-Status] ![Coverage-Status] ![Branch-Coverage-Status]
+![][Build-Status] ![][Coverage-Status] ![][Branch-Coverage-Status]
 
-![DOI-URI]
+![][DOI-URI]
 -->
 
-![Licence]
+![][Licence]
 
 `tqdm` (read taqadum, تقدّم) means "progress" in arabic.
 
@@ -33,7 +33,7 @@ Here's what the output looks like:
 `tqdm::range(N)` can be also used as a convenient shortcut for
 `tqdm::tqdm(std::vector<int>({0, ..., N - 1}))`.
 
-![Screenshot]
+![][Screenshot]
 
 It can also be executed stand-alone with pipes:
 
@@ -58,24 +58,15 @@ file for more information.
 Licence
 -------
 
-Open Source (OSI approved): ![Licence]
+Open Source (OSI approved): ![][Licence]
 
 
-Authors
--------
+![][Readme-Hits] (Since 19 May 2016)
 
-Ranked by contributions.
-
--  Casper da Costa-Luis (casperdcl)*
-
-`*` Original author
-
-![Readme-Hits] (Since 19 May 2016)
-
-    [Logo]: https://raw.githubusercontent.com/tqdm/tqdm/master/logo.png
-    [Screenshot]: https://raw.githubusercontent.com/tqdm/tqdm.cpp/master/images/tqdm.gif
-    [Github-Status]: https://img.shields.io/github/tag/tqdm/tqdm.cpp.svg?maxAge=2592000 (https://github.com/tqdm/tqdm.cpp/releases)
-    [Github-Forks]: https://img.shields.io/github/forks/tqdm/tqdm.cpp.svg (https://github.com/tqdm/tqdm.cpp/network)
-    [Github-Stars]: https://img.shields.io/github/stars/tqdm/tqdm.cpp.svg (https://github.com/tqdm/tqdm.cpp/stargazers)
-    [Licence]: https://img.shields.io/pypi/l/tqdm.cpp.svg (https://raw.githubusercontent.com/tqdm/tqdm.cpp/master/LICENCE)
-    [Readme-Hits]: http://hitt.herokuapp.com/tqdm/tqdm_cpp.svg
+  [Logo]: https://raw.githubusercontent.com/tqdm/tqdm/master/logo.png
+  [Screenshot]: https://raw.githubusercontent.com/tqdm/tqdm.cpp/master/images/tqdm.gif
+  [Github-Status]: https://img.shields.io/github/tag/tqdm/tqdm.cpp.svg?maxAge=2592000 "https://github.com/tqdm/tqdm.cpp/releases"
+  [Github-Forks]: https://img.shields.io/github/forks/tqdm/tqdm.cpp.svg "https://github.com/tqdm/tqdm.cpp/network"
+  [Github-Stars]: https://img.shields.io/github/stars/tqdm/tqdm.cpp.svg "https://github.com/tqdm/tqdm.cpp/stargazers"
+  [Licence]: https://img.shields.io/pypi/l/tqdm.svg "https://raw.githubusercontent.com/tqdm/tqdm.cpp/master/LICENCE"
+  [Readme-Hits]: http://hitt.herokuapp.com/tqdm/tqdm_cpp.svg

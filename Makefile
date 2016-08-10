@@ -10,7 +10,7 @@ ARFLAGS = rcs
 
 
 # Project variables
-WARNINGS = -Werror -Wall -Wextra -Wunused -Wformat=2
+WARNINGS = -Werror -Wall -Wextra -Wunused -Wformat=2 -Wno-missing-field-initializers
 
 # No end-user servicable parts below.
 
@@ -25,7 +25,7 @@ BIN_SOURCES := src/main.cpp
 LIB_SOURCES := $(filter-out ${BIN_SOURCES},$(wildcard src/*.cpp))
 TEST_SOURCES := $(wildcard test/*.cpp test/*.c)
 INTERNAL_HEADERS := $(wildcard src/*.hpp)
-PUBLIC_HEADERS := $(wildcard include/tqdm/*.hpp include/tqdm/*.h)
+PUBLIC_HEADERS := $(wildcard include/tqdm/*.hpp include/tqdm/*.h include/tqdm/*.tcc)
 
 BIN_OBJECTS := $(patsubst %,obj/%.o,${BIN_SOURCES})
 LIB_OBJECTS := $(patsubst %,obj/%.o,${LIB_SOURCES})

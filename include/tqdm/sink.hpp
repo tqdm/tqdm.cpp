@@ -3,6 +3,7 @@
 #include <atomic>
 
 #include "tqdm/fwd.hpp"
+#include "tqdm/list.hpp"
 
 
 namespace tqdm
@@ -17,12 +18,12 @@ namespace tqdm
         // Additional options will be added in future.
     };
 
-    class Sink
+    class Sink : public AtomicNode<Sink>
     {
         SinkOptions opts;
-        std::atomic<AbstractLine *> lines;
+        AtomicList<AbstractLine> lines;
     public:
-        explicit Sink(SinkOptions o) : opts(o) {}
+        explicit Sink(SinkOptions o);
         Sink(Sink&&) = delete;
         Sink& operator = (Sink&&) = delete;
     };

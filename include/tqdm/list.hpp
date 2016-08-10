@@ -1,23 +1,37 @@
 #pragma once
 
+#include <type_traits>
+
+#include "tqdm/fwd.hpp"
+
 
 namespace tqdm
 {
+    // CRTP
+    template<class Node>
+    class AtomicNode
+    {
+        friend class AtomicList<Node>;
+
+        std::atomic<Node *> intrusive_link_next;
+        std::atomic<Node *> intrusive_link_prev;
+
+        AtomicNode(Node *next, Node *prev);
+    public:
+        // Node is initially unattached
+        AtomicNode();
+        ~AtomicNode();
+    };
+
     // A non-owning intrusive linked list,
     // using atomics to ensure thread- and signal- safety.
     template<class Node>
     class AtomicList
     {
-        std::atomic<Node *> head;
-        std::atomic<std::atomic<Node *> *> approx_tail;
+        AtomicNode<Node> meta;
     public:
-        AtomicList() : head(nullptr), approx_tail(&head) {}
-        // Nothing to do - we didn't allocate any objects, merely borrow.
-        ~AtomicList() {}
-
-        // Forbid moves completely
-        AtomicList(AtomicList&&) = delete;
-        AtomicList& operator = (AtomicList&&) = delete;
+        AtomicList();
+        ~AtomicList();
 
         void append(Node *node);
     };

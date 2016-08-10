@@ -4,15 +4,14 @@
 
 #include <cstddef>
 
-#include "tqdm/fwd.hpp"
+#include "tqdm/list.hpp"
 
 
 namespace tqdm
 {
-    class AbstractLine
+    class AbstractLine : public AtomicNode<AbstractLine>
     {
         friend class Sink;
-        std::atomic<AbstractLine *> intrusive_link;
 
         struct
         {

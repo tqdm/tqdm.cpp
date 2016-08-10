@@ -25,7 +25,8 @@ int cat(FILE *in, FILE *out) {
 }
 
 int main() {
-  auto container = tqdm::tqdm<int *>(nullptr, nullptr);
-  printf("%lu\n", cat(stdin, stdout) + long(&container));
-  return 0;
+  int a[] = {1, 2, 3, 4, 5};
+  for (auto i = tqdm::Tqdm<int *>(a, a + 5); i; ++i)
+    ;
+  return cat(stdin, stdout);
 }

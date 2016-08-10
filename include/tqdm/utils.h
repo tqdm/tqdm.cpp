@@ -15,10 +15,113 @@
 
 #include <set>
 #include <limits>
+#include <type_traits>
+#include <cassert>
+
+namespace std {
+
+// #ifndef always_true
+// template<typename T>
+// struct always_true{ enum {value}; };
+// #endif  // always_true
+}
 
 namespace tqdm {
 
 // namespace utils{
+
+template <typename IT, typename Enabled = void>
+// stl-compliant iterable object which has its own value_type typedef
+struct IT_value_type {
+  typedef typename IT::value_type value_type;
+};
+
+template <typename IT>
+struct IT_value_type<
+    IT, typename std::enable_if<std::is_pointer<IT>::value>::type> {
+  typedef typename std::remove_pointer<IT>::type value_type;
+};
+
+template <typename IT>
+struct IT_value_type<IT,
+                     typename std::enable_if<std::is_array<IT>::value>::type> {
+  typedef typename std::remove_extent<IT>::type value_type;
+};
+
+// template <typename IT>
+// struct IT_value_type <IT, typename
+// std::enable_if<std::_Is_iterator<IT>::value>::type>
+// {
+// 	typedef typename IT::value_type value_type;
+// };
+
+template <typename _Iterator>
+/**
+Wrapper for pointers and std containter iterators.
+@author Casper da Costa-Luis
+*/
+class MyIteratorWrapper
+    : public std::iterator<std::forward_iterator_tag,
+                           typename IT_value_type<_Iterator>::value_type> {
+  _Iterator p;
+
+ public:
+  // already done by std::iterator
+  typedef typename IT_value_type<_Iterator>::value_type value_type;
+
+  // explicit ?
+  MyIteratorWrapper(_Iterator x) : p(x) {}
+  // default construct gives end
+  MyIteratorWrapper() : p(nullptr) {}
+  MyIteratorWrapper(const MyIteratorWrapper &mit) : p(mit.p) {}
+  // override this in Tqdm class
+  MyIteratorWrapper &operator++() {
+    assert(p != nullptr && "Out-of-bounds iterator increment");
+    ++p;
+    return *this;
+  }
+  MyIteratorWrapper operator++(int) {
+    assert(p != nullptr && "Out-of-bounds iterator increment!");
+    MyIteratorWrapper tmp(*this);
+    operator++();
+    return tmp;
+  }
+  template <class Other>
+  // two-way comparison: v.begin() == v.cbegin() and vice versa
+  bool operator==(const MyIteratorWrapper<Other> &rhs) {
+    return p == rhs.p;
+  }
+  template <class Other>
+  bool operator!=(const MyIteratorWrapper<Other> &rhs) {
+    return p != rhs.p;
+  }
+  value_type &operator*() {
+    assert(p != nullptr && "Invalid iterator dereference!");
+    return *p;
+  }
+  value_type &operator->() {
+    assert(p != nullptr && "Invalid iterator dereference!");
+    return *p;
+  }
+  // @return the underlying iterator
+  _Iterator &get() { return p; }
+  const _Iterator &get() const { return p; }
+  // TODO: const _Iterator &get() const { return p; }, etc ...
+  //
+  void swap(MyIteratorWrapper &other) noexcept { std::swap(p, other.p); }
+
+  // One way conversion: iterator -> const_iterator
+  /*operator MyIteratorWrapper<const value_type>() const {
+    return MyIteratorWrapper<const value_type>(p);
+  }*/
+  operator bool() const { return p; }
+};
+
+template <typename _Iterator,
+          typename _MyIteratorWrapper = MyIteratorWrapper<_Iterator> >
+_MyIteratorWrapper myIteratorWrapper(_Iterator x) {
+  return _MyIteratorWrapper(x);
+}
 
 template <typename IntType>
 /** TODO */

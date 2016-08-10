@@ -1,8 +1,7 @@
 #include "tqdm/tqdm.h"
 #include "tqdm/utils.h"
 
-namespace tqdm
-{
+namespace tqdm {
 
 // probably blank
 

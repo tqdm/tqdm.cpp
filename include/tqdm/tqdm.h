@@ -15,12 +15,12 @@ Usage:
     ...
 */
 
-#include "tqdm/utils.h"
-#include <limits>    // numeric_limits
 #include <cassert>   // assert
 #include <cstddef>   // ptrdiff_t, size_t
 #include <iterator>  // iterator
+#include <limits>    // numeric_limits
 #include <utility>   // swap
+#include "tqdm/utils.h"
 
 #ifndef SIZE_T_MAX
 static const size_t SIZE_T_MAX = std::numeric_limits<size_t>::max();

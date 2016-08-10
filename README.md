@@ -64,7 +64,7 @@ Open Source (OSI approved): ![][Licence]
 ![][Readme-Hits] (Since 19 May 2016)
 
   [Logo]: https://raw.githubusercontent.com/tqdm/tqdm/master/logo.png
-  [Screenshot]: https://raw.githubusercontent.com/tqdm/tqdm.cpp/master/images/tqdm.gif
+  [Screenshot]: https://raw.githubusercontent.com/tqdm/tqdm/master/images/tqdm.gif
   [Github-Status]: https://img.shields.io/github/tag/tqdm/tqdm.cpp.svg?maxAge=2592000 "https://github.com/tqdm/tqdm.cpp/releases"
   [Github-Forks]: https://img.shields.io/github/forks/tqdm/tqdm.cpp.svg "https://github.com/tqdm/tqdm.cpp/network"
   [Github-Stars]: https://img.shields.io/github/stars/tqdm/tqdm.cpp.svg "https://github.com/tqdm/tqdm.cpp/stargazers"

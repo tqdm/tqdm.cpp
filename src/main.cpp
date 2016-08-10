@@ -24,9 +24,4 @@ int cat(FILE *in, FILE *out) {
   return 0;
 }
 
-int main() {
-  int a[] = {1, 2, 3, 4, 5};
-  for (auto i = tqdm::Tqdm<int *>(a, a + 5); i; ++i)
-    ;
-  return cat(stdin, stdout);
-}
+int main() { return cat(stdin, stdout); }

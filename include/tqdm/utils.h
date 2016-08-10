@@ -14,8 +14,8 @@
 #endif  // CUR_OS
 
 #include <cassert>
+#include <iterator>
 #include <limits>
-#include <set>
 #include <type_traits>
 
 namespace std {
@@ -76,12 +76,12 @@ class MyIteratorWrapper
   MyIteratorWrapper(const MyIteratorWrapper &mit) : p(mit.p) {}
   // override this in Tqdm class
   MyIteratorWrapper &operator++() {
-    assert(p != nullptr && "Out-of-bounds iterator increment");
+    // assert(this->bool() && "Out-of-bounds iterator increment");
     ++p;
     return *this;
   }
   MyIteratorWrapper operator++(int) {
-    assert(p != nullptr && "Out-of-bounds iterator increment!");
+    // assert(this->bool() && "Out-of-bounds iterator increment!");
     MyIteratorWrapper tmp(*this);
     operator++();
     return tmp;
@@ -95,26 +95,31 @@ class MyIteratorWrapper
   bool operator!=(const MyIteratorWrapper<Other> &rhs) {
     return p != rhs.p;
   }
-  value_type &operator*() {
-    assert(p != nullptr && "Invalid iterator dereference!");
+  virtual value_type &operator*() {
+    // assert(this->bool() && "Invalid iterator dereference!");
     return *p;
   }
-  value_type &operator->() {
-    assert(p != nullptr && "Invalid iterator dereference!");
+  virtual value_type &operator->() {
+    // assert(this->bool() && "Invalid iterator dereference!");
     return *p;
   }
   // @return the underlying iterator
-  _Iterator &get() { return p; }
-  const _Iterator &get() const { return p; }
+  virtual _Iterator &get() { return p; }
+  virtual const _Iterator &get() const { return p; }
   // TODO: const _Iterator &get() const { return p; }, etc ...
   //
-  void swap(MyIteratorWrapper &other) noexcept { std::swap(p, other.p); }
+  virtual void swap(MyIteratorWrapper &other) noexcept {
+    std::swap(p, other.p);
+  }
 
   // One way conversion: iterator -> const_iterator
   /*operator MyIteratorWrapper<const value_type>() const {
     return MyIteratorWrapper<const value_type>(p);
   }*/
-  operator bool() const { return p; }
+  template <typename = typename std::is_pointer<_Iterator> >
+  operator bool() const {
+    return p;
+  }
 };
 
 template <typename _Iterator,

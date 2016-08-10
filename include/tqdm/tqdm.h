@@ -15,11 +15,12 @@ Usage:
     ...
 */
 
-#include <cassert>   // assert
-#include <cstddef>   // ptrdiff_t, size_t
-#include <iterator>  // iterator
-#include <limits>    // numeric_limits
-#include <utility>   // swap
+#include <cassert>    // assert
+#include <cstddef>    // ptrdiff_t, size_t
+#include <iterator>   // iterator
+#include <limits>     // numeric_limits
+#include <stdexcept>  // throw
+#include <utility>    // swap
 #include "tqdm/utils.h"
 
 #ifndef SIZE_T_MAX
@@ -42,12 +43,17 @@ class Tqdm : public TQDM_IT {
   size_t total;
 
  public:
+  // actually current value
+  virtual _Iterator begin() { return this->get(); }
+  virtual _Iterator end() { return e; }
+
   Tqdm(_Iterator begin, _Iterator end, size_t step = 1)
       : TQDM_IT(begin), e(end), s(step), total((end - begin) / step) {}
 
   Tqdm(_Iterator begin, size_t total, size_t step = 1)
       : TQDM_IT(begin), e(nullptr), s(step), total(total) {}
 
+  // caution: includes copy constructor
   template <typename _Container>
   Tqdm(_Container& v, size_t step = 1)
       : TQDM_IT(v.begin()),
@@ -55,25 +61,44 @@ class Tqdm : public TQDM_IT {
         s(step),
         total((v.end() - v.begin()) / step) {}
 
-  Tqdm& operator++()
-  // override ?
-  {
-    // TODO: print magic
+  Tqdm& operator++() {
+    // TODO: insert magic here
+
+    if (this->get() == this->end())
+      throw std::out_of_range("blah");  // TODO: don't throw, just double total
+
     TQDM_IT::operator++();
     if (this->get() == e) {
-      this->get() = nullptr;
-      printf("\rdone");
+      printf("\nfinished: %llu/%llu\n", (unsigned long long)total,
+             (unsigned long long)total);
     } else
       printf("\r%lld left", (long long)(e - this->get()));
     return *this;
   }
-  /* auto done?
-   * Tqdm operator++(int){
-    auto tmp = *this;
+
+  Tqdm operator++(int) {
+    Tqdm tmp(*this, s);
     operator++();
     return *this;
-  }*/
+  }
+  operator bool() const { return this->get() != e; }
 };
+
+template <typename _Iterator, typename _Tqdm = Tqdm<_Iterator>>
+_Tqdm tqdm(_Iterator begin, _Iterator end, size_t step = 1) {
+  return _Tqdm(begin, end, step);
+}
+
+template <typename _Iterator, typename _Tqdm = Tqdm<_Iterator>>
+_Tqdm tqdm(_Iterator begin, size_t total, size_t step = 1) {
+  return _Tqdm(begin, total, step);
+}
+
+template <typename _Container,
+          typename _Tqdm = Tqdm<typename _Container::iterator>>
+_Tqdm tqdm(_Container& v, size_t step = 1) {
+  return _Tqdm(v, step);
+}
 
 }  // tqdm
 

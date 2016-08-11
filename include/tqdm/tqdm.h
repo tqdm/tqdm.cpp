@@ -78,7 +78,7 @@ class Tqdm : public TQDM_IT {
   // virtual _Iterator end() { return e; }
   Tqdm end() const { return Tqdm(e, e); }
 
-  // unsafe: operator _Iterator() { return this->get(); }
+  explicit operator _Iterator() { return this->get(); }
 
   /** constructors
    */
@@ -95,15 +95,15 @@ class Tqdm : public TQDM_IT {
   // Tqdm(const Tqdm& other)
   //     : TQDM_IT(other.get()),
   //       e(other.end().get()),
-  //       self(other.sels),
+  //       self(other.self),
   // {
   //   // std::memcpy(this, &other, sizeof(Tqdm));
   // }
 
   template <typename _Container, typename = typename std::enable_if<
-                                     !is_same<_Container, Tqdm>::value>::type>
-  Tqdm(_Container& v) : TQDM_IT(v.begin()), e(v.end()), self() {
-    self.total = v.end() - v.begin();
+                                     !std::is_same<_Container, Tqdm>::value>::type>
+  Tqdm(_Container& v) : TQDM_IT(std::begin(v)), e(std::end(v)), self() {
+    self.total = e - this->get();
   }
 
   /** TODO: magic methods */
@@ -129,7 +129,7 @@ class Tqdm : public TQDM_IT {
     operator++();
     return *this;
   }
-  operator bool() const { return this->get() != e; }
+  explicit operator bool() const { return this->get() != e; }
 };
 
 template <typename _Iterator, typename _Tqdm = Tqdm<_Iterator>>
@@ -146,6 +146,16 @@ template <typename _Container,
           typename _Tqdm = Tqdm<typename _Container::iterator>>
 _Tqdm tqdm(_Container& v) {
   return _Tqdm(v);
+}
+
+template <int N, typename T, typename _Tqdm = Tqdm<T*>>
+_Tqdm tqdm(T (&tab)[N]) {
+  return _Tqdm(tab);
+}
+
+using RangeTqdm = Tqdm<RangeIterator>;
+RangeTqdm range(size_t v) {
+  return RangeTqdm(RangeIterator(v), RangeIterator(v));
 }
 
 }  // tqdm

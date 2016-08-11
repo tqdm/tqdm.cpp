@@ -59,7 +59,7 @@ class Tqdm : public TQDM_IT {
   // virtual _Iterator end() { return e; }
   Tqdm end() const { return Tqdm(e, e); }
 
-  operator _Iterator() { return this->get(); }
+  explicit operator _Iterator() { return this->get(); }
 
   /** constructors
    */
@@ -107,7 +107,7 @@ class Tqdm : public TQDM_IT {
     operator++();
     return *this;
   }
-  operator bool() const { return this->get() != e; }
+  explicit operator bool() const { return this->get() != e; }
 };
 
 class RangeIterator : public std::iterator<std::forward_iterator_tag, size_t> {

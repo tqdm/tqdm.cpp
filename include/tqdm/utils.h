@@ -126,7 +126,7 @@ class MyIteratorWrapper
     return MyIteratorWrapper<const value_type>(p);
   }*/
   template <typename = typename std::is_pointer<_Iterator> >
-  operator bool() const {
+  explicit operator bool() const {
     return p != nullptr;
   }
 };

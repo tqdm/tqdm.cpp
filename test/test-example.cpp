@@ -8,9 +8,10 @@ int main() {
   printf("pointer, pre-increment\n");
   int a[N];
   for (unsigned i = 0; i < N; ++i) a[i] = i;
-  // TODO: fix this:
-  // for (auto i = tqdm::tqdm(a, a + N); i; ++i)
   for (auto i = tqdm::tqdm(a, a + N); i != i.end(); ++i)
+    ;
+
+  for (auto i = tqdm::tqdm(a, a + N); i; ++i)
     ;
 
   printf("iterator, total, step\n");
@@ -29,9 +30,8 @@ int main() {
     if (i < 0) printf(" \b");
 
   printf("range-based with array\n");
-  // TODO: fix this:
-  // for (auto i = tqdm::tqdm(a); i; ++i)
-  for (auto it = tqdm::tqdm(a); it != it.end(); ++it)
+
+  for (auto it = tqdm::tqdm(a); it; ++it)
     ;
 
   printf("iterator-based range() example\n");

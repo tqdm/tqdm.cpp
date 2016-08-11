@@ -40,7 +40,8 @@ namespace tqdm
     }
 
     template<class Node>
-    void AtomicList<Node>::append(Node *node) {
+    void AtomicList<Node>::append(Node *node) 
+    {
         (void) node;
 #if 0
         Node *singular = &meta;

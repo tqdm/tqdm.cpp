@@ -36,8 +36,9 @@ Wrapper for pointers and std containter iterators.
 @author Casper da Costa-Luis
 */
 class MyIteratorWrapper
-    : public std::iterator<std::forward_iterator_tag,
-                           typename std::iterator_traits<_Iterator>::value_type> {
+    : public std::iterator<
+          std::forward_iterator_tag,
+          typename std::iterator_traits<_Iterator>::value_type> {
   _Iterator p;
 
  public:
@@ -106,7 +107,46 @@ _MyIteratorWrapper myIteratorWrapper(_Iterator x) {
   return _MyIteratorWrapper(x);
 }
 
+class RangeIterator : public std::iterator<std::forward_iterator_tag, size_t> {
+ private:
+  mutable size_t current = 0;
+  size_t total;
 
+ public:
+  RangeIterator(size_t total) : total(total) {}
+  size_t &operator*() { return current; }
+  const size_t &operator*() const { return current; }
+  RangeIterator &operator++() {
+    ++current;
+    return *this;
+  }
+  const RangeIterator &operator++() const {
+    ++current;
+    return *this;
+  }
+  RangeIterator operator++(int) {
+    RangeIterator tmp(*this);
+    operator++();
+    return *this;
+  }
+  const RangeIterator operator++(int)const {
+    RangeIterator tmp(*this);
+    operator++();
+    return tmp;
+  }
+  explicit operator bool() const { return current < total; }
+
+  /** here be dragons */
+
+  // only use as (it != end), not as (end != it)
+  bool operator!=(const RangeIterator &) const { return current < total; }
+  bool operator==(const RangeIterator &) const { return current >= total; }
+  size_t operator-(const RangeIterator &it) const {
+    // it's used in `end - begin`, but `end` is only a sentinel
+    // so let's use `begin `to be consistent
+    return it.total - it.current;
+  }
+};
 
 // colorama win
 // weakset

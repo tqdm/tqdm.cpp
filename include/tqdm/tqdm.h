@@ -33,10 +33,6 @@ Usage:
 static const size_t SIZE_T_MAX = std::numeric_limits<size_t>::max();
 #endif
 
-#ifndef TQDM_IT
-#define TQDM_IT MyIteratorWrapper<_Iterator>
-#endif
-
 namespace tqdm {
 
 const char* author[] = {"github.com/casperdcl"};
@@ -62,8 +58,9 @@ struct Params {
 };
 
 template <typename _Iterator>
-class Tqdm : public TQDM_IT {
+class Tqdm : public MyIteratorWrapper<_Iterator> {
  private:
+  using TQDM_IT = MyIteratorWrapper<_Iterator>;
   _Iterator e;  // end
   Params self;  // ha, ha
 
@@ -100,8 +97,9 @@ class Tqdm : public TQDM_IT {
   //   // std::memcpy(this, &other, sizeof(Tqdm));
   // }
 
-  template <typename _Container, typename = typename std::enable_if<
-                                     !std::is_same<_Container, Tqdm>::value>::type>
+  template <typename _Container,
+            typename = typename std::enable_if<
+                !std::is_same<_Container, Tqdm>::value>::type>
   Tqdm(_Container& v) : TQDM_IT(std::begin(v)), e(std::end(v)), self() {
     self.total = e - this->get();
   }

@@ -10,7 +10,7 @@ ARFLAGS = rcs
 
 
 # Project variables
-WARNINGS = -Wall -Wextra -Wunused -Wformat=2 -Wno-missing-field-initializers 
+WARNINGS = -Wall -Wextra -Wunused -Wformat=2 -Wno-missing-field-initializers
 
 # No end-user servicable parts below.
 

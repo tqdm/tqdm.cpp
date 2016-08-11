@@ -41,12 +41,31 @@ namespace tqdm {
 
 const char* author[] = {"github.com/casperdcl"};
 
+struct Params {
+  std::string desc;
+  size_t total = -1;
+  bool leave = true;
+  FILE* f = stderr;
+  int ncols = -1;
+  float mininterval = 0.1, maxinterval = 10.0;
+  unsigned miniters = -1;
+  std::string ascii = " 123456789#";
+  bool disable = false;
+  std::string unit = "it";
+  bool unit_scale = false;
+  bool dynamic_ncols = false;
+  float smoothing = 0.3;
+  std::string bar_format;
+  size_t initial = 0;
+  int position = -1;
+  bool gui = false;
+};
+
 template <typename _Iterator>
 class Tqdm : public TQDM_IT {
  private:
   _Iterator e;  // end
-  size_t s;     // step
-  size_t total;
+  Params self;  // ha, ha
 
  public:
   /**
@@ -59,28 +78,33 @@ class Tqdm : public TQDM_IT {
   // virtual _Iterator end() { return e; }
   Tqdm end() const { return Tqdm(e, e); }
 
-  operator _Iterator() { return this->get(); }
+  // unsafe: operator _Iterator() { return this->get(); }
 
   /** constructors
    */
   explicit Tqdm(_Iterator begin, _Iterator end)
-      : TQDM_IT(begin), e(end), s(1), total(end - begin) {}
+      : TQDM_IT(begin), e(end), self() {
+    self.total = end - begin;
+  }
 
-  explicit Tqdm(_Iterator begin, size_t total, size_t step = 1)
-      : TQDM_IT(begin), e(begin + total), s(step), total(total / step) {}
+  explicit Tqdm(_Iterator begin, size_t total)
+      : TQDM_IT(begin), e(begin + total), self() {
+    self.total = total;
+  }
 
   // Tqdm(const Tqdm& other)
   //     : TQDM_IT(other.get()),
   //       e(other.end().get()),
-  //       s(other.s),
-  //       total(other.total) {
+  //       self(other.sels),
+  // {
   //   // std::memcpy(this, &other, sizeof(Tqdm));
   // }
 
   template <typename _Container, typename = typename std::enable_if<
                                      !is_same<_Container, Tqdm>::value>::type>
-  Tqdm(_Container& v)
-      : TQDM_IT(v.begin()), e(v.end()), s(1), total(v.end() - v.begin()) {}
+  Tqdm(_Container& v) : TQDM_IT(v.begin()), e(v.end()), self() {
+    self.total = v.end() - v.begin();
+  }
 
   /** TODO: magic methods */
 
@@ -94,10 +118,9 @@ class Tqdm : public TQDM_IT {
 
     TQDM_IT::operator++();
     if (this->get() == e) {
-      printf("\nfinished: %llu/%llu\n", (unsigned long long)total,
-             (unsigned long long)total);
+      printf("\nfinished: %" PRIu64 "/%" PRIu64 "\n", self.total, self.total);
     } else
-      printf("\r%lld left", (long long)(e - this->get()));
+      printf("\r%" PRIi64 " left", (int64_t)(e - this->get()));
     return *this;
   }
 
@@ -115,8 +138,8 @@ _Tqdm tqdm(_Iterator begin, _Iterator end) {
 }
 
 template <typename _Iterator, typename _Tqdm = Tqdm<_Iterator>>
-_Tqdm tqdm(_Iterator begin, size_t total, size_t step = 1) {
-  return _Tqdm(begin, total, step);
+_Tqdm tqdm(_Iterator begin, size_t total) {
+  return _Tqdm(begin, total);
 }
 
 template <typename _Container,

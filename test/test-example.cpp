@@ -13,10 +13,10 @@ int main() {
   for (auto i = tqdm::tqdm(a, a + N); i != i.end(); ++i)
     ;
 
-  printf("iterator, total, step\n");
+  printf("iterator, total\n");
   std::vector<int> b(N);
   std::memcpy(b.data(), a, sizeof(int) * N);
-  for (auto i = tqdm::tqdm(b.begin(), N, 2); i; ++i)
+  for (auto i = tqdm::tqdm(b.begin(), N); i; ++i)
     ;
 
   printf("container, post-increment\n");

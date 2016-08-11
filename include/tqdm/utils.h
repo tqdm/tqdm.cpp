@@ -14,17 +14,19 @@
 #endif  // CUR_OS
 
 #include <cassert>
+#include <cinttypes>
+#include <cstdint>
 #include <iterator>
 #include <limits>
 #include <type_traits>
 
-namespace std {
+#ifndef constexpr
+#define constexpr static const
+#endif
 
-// #ifndef always_true
-// template<typename T>
-// struct always_true{ enum {value}; };
-// #endif  // always_true
-}
+#ifndef explicit
+#define explicit
+#endif
 
 namespace tqdm {
 

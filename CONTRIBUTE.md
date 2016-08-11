@@ -10,3 +10,7 @@ the [repository](https://github.com/tqdm/tqdm.cpp) and open a
 There also exists an ad-hoc
 [chat room](http://chat.stackexchange.com/rooms/43704/tqdm-cpp)
 for discussion on small issues.
+
+A gist of 
+[quick links](https://gist.github.com/CrazyPython/1b30cbac6b5f6b70ea7128d5c3355aee)
+for easy access to commonly used locations.

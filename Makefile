@@ -28,6 +28,7 @@ TEST_OBJECTS := $(patsubst %,obj/%.o,${TEST_SOURCES})
 
 BIN := bin/tqdm
 LIB := lib/libtqdm.a
+PCH := $(INTERNAL_HEADERS:%=%.gch)
 # second foreach is equivalent to scoped variable binding
 TESTS := $(foreach test_obj,${TEST_OBJECTS},$(foreach test_bin,$(basename $(patsubst obj/%.o,bin/%,${test_obj})),${test_bin} $(eval ${test_bin}: ${test_obj} ${LIB})))
 TEST_RUNS := $(patsubst bin/%,run/%,${TESTS})
@@ -36,12 +37,12 @@ MKDIR_FIRST = @mkdir -p ${@D}
 RM_FIRST = @rm -f $@
 
 .PHONY: ${TEST_RUNS}
-all: ${BIN} ${LIB}
+all: ${PCH} ${BIN} ${LIB}
 test: ${TEST_RUNS}
 tests: ${TESTS}
 
 clean:
-	rm -rf bin/ lib/ obj/
+	rm -rf ${PCH} bin/ lib/ obj/
 
 ${BIN}: ${BIN_OBJECTS} ${LIB}
 ${LIB}: ${LIB_OBJECTS}
@@ -53,11 +54,15 @@ ${BIN_OBJECTS} ${LIB_OBJECTS} ${TEST_OBJECTS}: ${INTERNAL_HEADERS} ${PUBLIC_HEAD
 .DELETE_ON_ERROR:
 .SUFFIXES:
 
+%.gch: %
+	${CXX} ${CXXFLAGS} ${CPPFLAGS} -c -o $@ $<
+
 obj/%.c.o: %.c
 	${MKDIR_FIRST}
 	${CC} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<
 
 obj/%.cpp.o: %.cpp
+	clang-format-3.8 -style="{BasedOnStyle: Google, SortIncludes: false}" -i $^
 	${MKDIR_FIRST}
 	${CXX} ${CXXFLAGS} ${CPPFLAGS} -c -o $@ $<
 

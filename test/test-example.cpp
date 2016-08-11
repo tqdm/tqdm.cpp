@@ -28,5 +28,5 @@ int main() {
     // if (i) printf("\r%d", i);
     if (i < 0) printf(" \b");
 
-  return 0;  // cat(stdin, stdout);
+  return 0;
 }

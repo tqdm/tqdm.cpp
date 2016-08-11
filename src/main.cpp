@@ -1,4 +1,5 @@
-#include <stdio.h>
+#include "stdafx.h"
+#include <cstdio>
 #include "tqdm/tqdm.h"
 #include "tqdm/utils.h"
 

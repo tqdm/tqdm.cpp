@@ -51,7 +51,7 @@ All source code is hosted on [github](https://github.com/tqdm/tqdm.cpp).
 Contributions are welcome.
 
 See the
-[CONTRIBUTE](https://raw.githubusercontent.com/tqdm/tqdm.cpp/master/CONTRIBUTE)
+[CONTRIBUTE.md](https://raw.githubusercontent.com/tqdm/tqdm.cpp/master/CONTRIBUTE.md)
 file for more information.
 
 

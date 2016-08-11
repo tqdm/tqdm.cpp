@@ -13,12 +13,12 @@
 
 #endif  // CUR_OS
 
-#include <cassert>
-#include <cinttypes>
-#include <cstdint>
-#include <iterator>
-#include <limits>
-#include <type_traits>
+// #include <cassert>    // assert
+// #include <cstdint>    // int64_t
+#include <cstddef>   // ptrdiff_t, size_t
+#include <iterator>  // iterator
+// #include <limits>    // numeric_limits
+#include <type_traits>  // is_pointer, ...
 
 #ifndef constexpr
 #define constexpr static const

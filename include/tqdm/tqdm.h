@@ -22,12 +22,14 @@ Usage:
 */
 
 #include <cassert>    // assert
+#include <cinttypes>  // PRIu64
+#include <cstdint>    // int64_t
 #include <cstddef>    // ptrdiff_t, size_t
 #include <iterator>   // iterator
 #include <limits>     // numeric_limits
 #include <stdexcept>  // throw
-#include <utility>    // swap
 #include <string>     // string
+#include <utility>    // swap
 #include "tqdm/utils.h"
 
 #ifndef SIZE_T_MAX

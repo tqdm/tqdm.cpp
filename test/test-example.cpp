@@ -23,10 +23,23 @@ int main() {
   for (auto i = tqdm::tqdm(b); i; i++)
     ;
 
-  printf("range-based loop example\n");
+  printf("range-based container\n");
   for (auto &i : tqdm::tqdm(b))
     // if (i) printf("\r%d", i);
     if (i < 0) printf(" \b");
+
+  printf("range-based array\n");
+  // for (auto it = tqdm::tqdm(a); *it < a[N - 1]; ++it)
+  for (auto &i : tqdm::tqdm(a))
+    if (i < 0) printf(" \b");
+
+  printf("iterator-based pythonic range()\n");
+  for (auto it = tqdm::range(N); it; ++it)
+    ;
+
+  printf("ye moste pythonic range()\n");
+  for (auto &i : tqdm::range(N))
+    if (i > size_t(-1)) printf(" \b");
 
   return 0;
 }

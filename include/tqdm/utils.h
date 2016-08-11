@@ -28,39 +28,6 @@ namespace std {
 
 namespace tqdm {
 
-template <typename T, typename U>
-struct is_same : std::false_type {};
-
-template <typename T>
-struct is_same<T, T> : std::true_type {};
-
-// namespace utils{
-
-template <typename IT, typename Enabled = void>
-// stl-compliant iterable object which has its own value_type typedef
-struct IT_value_type {
-  typedef typename IT::value_type value_type;
-};
-
-template <typename IT>
-struct IT_value_type<
-    IT, typename std::enable_if<std::is_pointer<IT>::value>::type> {
-  typedef typename std::remove_pointer<IT>::type value_type;
-};
-
-template <typename IT>
-struct IT_value_type<IT,
-                     typename std::enable_if<std::is_array<IT>::value>::type> {
-  typedef typename std::remove_extent<IT>::type value_type;
-};
-
-// template <typename IT>
-// struct IT_value_type <IT, typename
-// std::enable_if<std::_Is_iterator<IT>::value>::type>
-// {
-// 	typedef typename IT::value_type value_type;
-// };
-
 template <typename _Iterator>
 /**
 Wrapper for pointers and std containter iterators.
@@ -68,12 +35,12 @@ Wrapper for pointers and std containter iterators.
 */
 class MyIteratorWrapper
     : public std::iterator<std::forward_iterator_tag,
-                           typename IT_value_type<_Iterator>::value_type> {
+                           typename std::iterator_traits<_Iterator>::value_type> {
   _Iterator p;
 
  public:
   // already done by std::iterator
-  typedef typename IT_value_type<_Iterator>::value_type value_type;
+  typedef typename std::iterator_traits<_Iterator>::value_type value_type;
 
   explicit MyIteratorWrapper(_Iterator x) : p(x) {}
   // default construct gives end

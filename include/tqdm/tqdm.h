@@ -78,7 +78,7 @@ class Tqdm : public TQDM_IT {
   // }
 
   template <typename _Container, typename = typename std::enable_if<
-                                     !is_same<_Container, Tqdm>::value>::type>
+                                     !std::is_same<_Container, Tqdm>::value>::type>
   Tqdm(_Container& v)
       : TQDM_IT(std::begin(v)), e(std::end(v)), s(1)
       , total(std::end(v) - std::begin(v)) {}

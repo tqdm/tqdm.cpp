@@ -39,7 +39,7 @@ class MyIteratorWrapper
     : public std::iterator<
           std::forward_iterator_tag,
           typename std::iterator_traits<_Iterator>::value_type> {
-  _Iterator p;
+  mutable _Iterator p;  // TODO: remove this mutable
 
  public:
   // already done by std::iterator
@@ -49,47 +49,65 @@ class MyIteratorWrapper
   // default construct gives end
   MyIteratorWrapper() : p(nullptr) {}
   explicit MyIteratorWrapper(const MyIteratorWrapper &mit) : p(mit.p) {}
+
   // override this in Tqdm class
+  virtual void _incr() { ++p; }
+  // override this in Tqdm class
+  virtual void _incr() const { ++p; }
+
   MyIteratorWrapper &operator++() {
     // assert(this->bool() && "Out-of-bounds iterator increment");
-    ++p;
+    _incr();
     return *this;
   }
-  MyIteratorWrapper operator++(int) {
-    // assert(this->bool() && "Out-of-bounds iterator increment!");
+  const MyIteratorWrapper &operator++() const {
+    _incr();
+    return *this;
+  }
+  MyIteratorWrapper operator++(int)const {
     MyIteratorWrapper tmp(*this);
-    operator++();
+    _incr();
     return tmp;
   }
   template <class Other>
   // two-way comparison: v.begin() == v.cbegin() and vice versa
-  bool operator==(const MyIteratorWrapper<Other> &rhs) {
+  bool operator==(const MyIteratorWrapper<Other> &rhs) const {
     return p == rhs.p;
   }
   template <class Other>
-  bool operator!=(const MyIteratorWrapper<Other> &rhs) {
+  bool operator!=(const MyIteratorWrapper<Other> &rhs) const {
     return p != rhs.p;
   }
-  // template <class Other>
-  // size_t operator-(const MyIteratorWrapper<Other> &rhs) {
-  //   return p - rhs.p;
-  // }
-  virtual value_type &operator*() {
+  template <class Other>
+  size_t operator-(const MyIteratorWrapper<Other> &rhs) {
+    return p - rhs.p;
+  }
+  // template <typename = typename std::enable_if<
+  //               !std::is_const<value_type>::value>::type>
+  value_type &operator*() {
     // assert(this->bool() && "Invalid iterator dereference!");
     return *p;
   }
-  virtual value_type &operator->() {
+  const value_type &operator*() const {
+    // assert(this->bool() && "Invalid iterator dereference!");
+    return *p;
+  }
+  // template <typename = typename std::enable_if<
+  //               !std::is_const<value_type>::value>::type>
+  value_type &operator->() {
+    // assert(this->bool() && "Invalid iterator dereference!");
+    return *p;
+  }
+  const value_type &operator->() const {
     // assert(this->bool() && "Invalid iterator dereference!");
     return *p;
   }
   // @return the underlying iterator
-  virtual _Iterator &get() { return p; }
-  virtual const _Iterator &get() const { return p; }
+  _Iterator &get() { return p; }
+  const _Iterator &get() const { return p; }
   // TODO: const _Iterator &get() const { return p; }, etc ...
   //
-  virtual void swap(MyIteratorWrapper &other) noexcept {
-    std::swap(p, other.p);
-  }
+  void swap(MyIteratorWrapper &other) noexcept { std::swap(p, other.p); }
 
   // One way conversion: iterator -> const_iterator
   /*operator MyIteratorWrapper<const value_type>() const {
@@ -107,41 +125,43 @@ _MyIteratorWrapper myIteratorWrapper(_Iterator x) {
   return _MyIteratorWrapper(x);
 }
 
-class RangeIterator : public std::iterator<std::forward_iterator_tag, size_t> {
+template <typename IntType = int>
+class RangeIterator : public std::iterator<std::forward_iterator_tag, IntType> {
  private:
-  mutable size_t current = 0;
-  size_t total;
+  mutable IntType current;
+  IntType total;
+  IntType step;
 
  public:
-  RangeIterator(size_t total) : total(total) {}
-  size_t &operator*() { return current; }
-  const size_t &operator*() const { return current; }
+  RangeIterator(IntType total) : current(0), total(total), step(1) {}
+  RangeIterator(IntType start, IntType total)
+      : current(start), total(total), step(1) {}
+  RangeIterator(IntType start, IntType total, IntType step)
+      : current(start), total(total), step(step) {}
+  IntType &operator*() { return current; }
+  const IntType &operator*() const { return current; }
   RangeIterator &operator++() {
-    ++current;
+    current += step;
     return *this;
   }
   const RangeIterator &operator++() const {
-    ++current;
+    current += step;
     return *this;
   }
-  RangeIterator operator++(int) {
-    RangeIterator tmp(*this);
-    operator++();
-    return *this;
-  }
-  const RangeIterator operator++(int)const {
+  RangeIterator operator++(int)const {
     RangeIterator tmp(*this);
     operator++();
     return tmp;
   }
   explicit operator bool() const { return current < total; }
+  size_t size_remaining() const { return (total - current) / step; }
 
   /** here be dragons */
 
   // only use as (it != end), not as (end != it)
   bool operator!=(const RangeIterator &) const { return current < total; }
   bool operator==(const RangeIterator &) const { return current >= total; }
-  size_t operator-(const RangeIterator &it) const {
+  IntType operator-(const RangeIterator &it) const {
     // it's used in `end - begin`, but `end` is only a sentinel
     // so let's use `begin `to be consistent
     return it.total - it.current;

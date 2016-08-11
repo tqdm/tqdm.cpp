@@ -108,28 +108,40 @@ class Tqdm : public MyIteratorWrapper<_Iterator> {
   }
 
   /** TODO: magic methods */
-
-  /** iterator-like methods */
-  Tqdm& operator++() {
-    // TODO: insert magic here
-
+  virtual void _incr() const override {
     if (this->get() == e)
       throw std::out_of_range(
           "exhausted");  // TODO: don't throw, just double total
 
-    TQDM_IT::operator++();
+    TQDM_IT::_incr();
     if (this->get() == e) {
       printf("\nfinished: %" PRIu64 "/%" PRIu64 "\n", self.total, self.total);
     } else
       printf("\r%" PRIi64 " left", (int64_t)(e - this->get()));
-    return *this;
   }
+  virtual void _incr() override { ((Tqdm const&)*this)._incr(); }
 
-  Tqdm operator++(int) {
-    Tqdm tmp(*this);
-    operator++();
-    return *this;
-  }
+  /** iterator-like methods */
+  // Tqdm& operator++() {
+  //   // TODO: insert magic here
+  //   _incr();
+  //   return *this;
+  // }
+  // const Tqdm& operator++() const {
+  //   // TODO: insert magic here
+  //   _incr();
+  //   return *this;
+  // }
+  // Tqdm operator++(int) {
+  //   Tqdm tmp(*this);
+  //   operator++();
+  //   return *this;
+  // }
+  // const Tqdm operator++(int)const {
+  //   Tqdm tmp(*this);
+  //   operator++();
+  //   return *this;
+  // }
   explicit operator bool() const { return this->get() != e; }
 };
 
@@ -154,9 +166,12 @@ _Tqdm tqdm(T (&tab)[N]) {
   return _Tqdm(tab, N);
 }
 
-using RangeTqdm = Tqdm<RangeIterator>;
-RangeTqdm range(size_t v) {
-  return RangeTqdm(RangeIterator(v), RangeIterator(v));
+template <typename SizeType = int>
+using RangeTqdm = Tqdm<RangeIterator<SizeType>>;
+template <typename SizeType>
+RangeTqdm<SizeType> range(SizeType v) {
+  return RangeTqdm<SizeType>(RangeIterator<SizeType>(v),
+                             RangeIterator<SizeType>(v));
 }
 
 }  // tqdm

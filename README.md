@@ -27,8 +27,8 @@ for (int i : tqdm::range(5))  // same as for(int i = 0; i < 5; ++i)
   ...
 
 // or manually with and array or container:
-std::vector<int> a = {0, 1, 2, 3, 4, 5};
-for (int i : tqdm::tqdm(a))
+std::vector<float> a = {0, 1, 2, 3, 4, 5};
+for (float &i : tqdm::tqdm(a))
   ...
 ```
 

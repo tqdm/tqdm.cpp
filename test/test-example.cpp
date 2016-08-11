@@ -37,9 +37,9 @@ int main() {
   for (auto it = tqdm::range(N); it; ++it)
     ;
 
-  printf("ye moste pythonic range()\n");
-  for (auto &i : tqdm::range(N))
-    if (i > size_t(-1)) printf(" \b");
+  printf("ye moste pythonic range(), auto type inference\n");
+  for (auto &i : tqdm::range(float(N)))
+    if (i < 0.0f) printf(" \b");
 
   return 0;
 }

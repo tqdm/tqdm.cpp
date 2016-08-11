@@ -110,9 +110,13 @@ class MyIteratorWrapper
   void swap(MyIteratorWrapper &other) noexcept { std::swap(p, other.p); }
 
   // One way conversion: iterator -> const_iterator
-  /*operator MyIteratorWrapper<const value_type>() const {
-    return MyIteratorWrapper<const value_type>(p);
-  }*/
+  // template <typename =
+  //               typename
+  //               std::enable_if<!std::is_const<_Iterator>::value>::type>
+  // operator MyIteratorWrapper<typename std::add_const<_Iterator>::type>()
+  // const {
+  //   return MyIteratorWrapper<const _Iterator>(p);
+  // }
   template <typename = typename std::is_pointer<_Iterator> >
   explicit operator bool() const {
     return p != nullptr;

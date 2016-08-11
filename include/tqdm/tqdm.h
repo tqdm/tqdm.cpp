@@ -107,6 +107,8 @@ class Tqdm : public MyIteratorWrapper<_Iterator> {
     self.total = e - this->get();
   }
 
+  explicit operator bool() const { return this->get() != e; }
+
   /** TODO: magic methods */
   virtual void _incr() const override {
     if (this->get() == e)
@@ -120,29 +122,6 @@ class Tqdm : public MyIteratorWrapper<_Iterator> {
       printf("\r%" PRIi64 " left", (int64_t)(e - this->get()));
   }
   virtual void _incr() override { ((Tqdm const&)*this)._incr(); }
-
-  /** iterator-like methods */
-  // Tqdm& operator++() {
-  //   // TODO: insert magic here
-  //   _incr();
-  //   return *this;
-  // }
-  // const Tqdm& operator++() const {
-  //   // TODO: insert magic here
-  //   _incr();
-  //   return *this;
-  // }
-  // Tqdm operator++(int) {
-  //   Tqdm tmp(*this);
-  //   operator++();
-  //   return *this;
-  // }
-  // const Tqdm operator++(int)const {
-  //   Tqdm tmp(*this);
-  //   operator++();
-  //   return *this;
-  // }
-  explicit operator bool() const { return this->get() != e; }
 };
 
 template <typename _Iterator, typename _Tqdm = Tqdm<_Iterator>>

@@ -80,7 +80,8 @@ class Tqdm : public TQDM_IT {
   template <typename _Container, typename = typename std::enable_if<
                                      !is_same<_Container, Tqdm>::value>::type>
   Tqdm(_Container& v)
-      : TQDM_IT(v.begin()), e(v.end()), s(1), total(v.end() - v.begin()) {}
+      : TQDM_IT(std::begin(v)), e(std::end(v)), s(1)
+      , total(std::end(v) - std::begin(v)) {}
 
   /** TODO: magic methods */
 
@@ -152,6 +153,11 @@ template <typename _Container,
           typename _Tqdm = Tqdm<typename _Container::iterator>>
 _Tqdm tqdm(_Container& v) {
   return _Tqdm(v);
+}
+
+template <int N, typename T, typename _Tqdm = Tqdm<T*>>
+_Tqdm tqdm(T (&tab)[N]) {
+  return _Tqdm(tab);
 }
 
 using RangeTqdm = Tqdm<RangeIterator>;

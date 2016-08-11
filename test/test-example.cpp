@@ -28,6 +28,12 @@ int main() {
     // if (i) printf("\r%d", i);
     if (i < 0) printf(" \b");
 
+  printf("range-based with array\n");
+  // TODO: fix this:
+  // for (auto i = tqdm::tqdm(a); i; ++i)
+  for (auto it = tqdm::tqdm(a); it != it.end(); ++it)
+    ;
+
   printf("iterator-based range() example\n");
   for (auto it = tqdm::range(N); it; ++it)
     ;

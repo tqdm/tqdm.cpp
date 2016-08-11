@@ -40,9 +40,9 @@ namespace tqdm
     }
 
     template<class Node>
-    void AtomicList<Node>::append(Node *node) 
+    void AtomicList<Node>::append(Node *node)
     {
-        (void) node;
+        (void)node;
 #if 0
         Node *singular = &meta;
         // TODO when deletion is added, need to disable that

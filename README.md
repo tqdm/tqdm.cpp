@@ -23,8 +23,8 @@ iterable with "tqdm(iterable)", and you're done!
 ``` cpp
 #include "tqdm/tqdm.h"
 
-int a[] = {0, 1, 2, 3, 4, 5};
-for (int i : tqdm::tqdm(a, a + 5))
+std::vector<int> a = {0, 1, 2, 3, 4, 5};
+for (int i : tqdm::tqdm(a))
   ...
 ```
 

@@ -4,6 +4,12 @@
 Customisable progressbar decorator for iterators.
 Includes a default range iterator printing to stderr.
 
+TODO:
+* handle s(tep) with operator+/-(=)
+* chrono and delay printing
+* class status printer
+* iterator-less: fake range iterable, update() increments value
+
 Usage:
   # include "tqdm/tqdm.h"
   for(int i : tqdm::range(4))
@@ -43,29 +49,48 @@ class Tqdm : public TQDM_IT {
   size_t total;
 
  public:
+  /**
+   containter-like methods
+   */
   // actually current value
-  virtual _Iterator begin() { return this->get(); }
-  virtual _Iterator end() { return e; }
+  // virtual _Iterator begin() { return this->get(); }
+  Tqdm& begin() { return *this; }
+  const Tqdm& begin() const { return *this; }
+  // virtual _Iterator end() { return e; }
+  Tqdm end() const { return Tqdm(e, e); }
 
-  Tqdm(_Iterator begin, _Iterator end, size_t step = 1)
-      : TQDM_IT(begin), e(end), s(step), total((end - begin) / step) {}
+  operator _Iterator() { return this->get(); }
 
-  Tqdm(_Iterator begin, size_t total, size_t step = 1)
-      : TQDM_IT(begin), e(nullptr), s(step), total(total) {}
+  /** constructors
+   */
+  explicit Tqdm(_Iterator begin, _Iterator end)
+      : TQDM_IT(begin), e(end), s(1), total(end - begin) {}
 
-  // caution: includes copy constructor
-  template <typename _Container>
-  Tqdm(_Container& v, size_t step = 1)
-      : TQDM_IT(v.begin()),
-        e(v.end()),
-        s(step),
-        total((v.end() - v.begin()) / step) {}
+  explicit Tqdm(_Iterator begin, size_t total, size_t step = 1)
+      : TQDM_IT(begin), e(begin + total), s(step), total(total / step) {}
 
+  // Tqdm(const Tqdm& other)
+  //     : TQDM_IT(other.get()),
+  //       e(other.end().get()),
+  //       s(other.s),
+  //       total(other.total) {
+  //   // std::memcpy(this, &other, sizeof(Tqdm));
+  // }
+
+  template <typename _Container, typename = typename std::enable_if<
+                                     !is_same<_Container, Tqdm>::value>::type>
+  Tqdm(_Container& v)
+      : TQDM_IT(v.begin()), e(v.end()), s(1), total(v.end() - v.begin()) {}
+
+  /** TODO: magic methods */
+
+  /** iterator-like methods */
   Tqdm& operator++() {
     // TODO: insert magic here
 
-    if (this->get() == this->end())
-      throw std::out_of_range("blah");  // TODO: don't throw, just double total
+    if (this->get() == e)
+      throw std::out_of_range(
+          "exhausted");  // TODO: don't throw, just double total
 
     TQDM_IT::operator++();
     if (this->get() == e) {
@@ -77,7 +102,7 @@ class Tqdm : public TQDM_IT {
   }
 
   Tqdm operator++(int) {
-    Tqdm tmp(*this, s);
+    Tqdm tmp(*this);
     operator++();
     return *this;
   }
@@ -85,8 +110,8 @@ class Tqdm : public TQDM_IT {
 };
 
 template <typename _Iterator, typename _Tqdm = Tqdm<_Iterator>>
-_Tqdm tqdm(_Iterator begin, _Iterator end, size_t step = 1) {
-  return _Tqdm(begin, end, step);
+_Tqdm tqdm(_Iterator begin, _Iterator end) {
+  return _Tqdm(begin, end);
 }
 
 template <typename _Iterator, typename _Tqdm = Tqdm<_Iterator>>
@@ -96,8 +121,8 @@ _Tqdm tqdm(_Iterator begin, size_t total, size_t step = 1) {
 
 template <typename _Container,
           typename _Tqdm = Tqdm<typename _Container::iterator>>
-_Tqdm tqdm(_Container& v, size_t step = 1) {
-  return _Tqdm(v, step);
+_Tqdm tqdm(_Container& v) {
+  return _Tqdm(v);
 }
 
 }  // tqdm

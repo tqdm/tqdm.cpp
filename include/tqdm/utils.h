@@ -28,6 +28,12 @@ namespace std {
 
 namespace tqdm {
 
+template <typename T, typename U>
+struct is_same : std::false_type {};
+
+template <typename T>
+struct is_same<T, T> : std::true_type {};
+
 // namespace utils{
 
 template <typename IT, typename Enabled = void>
@@ -69,11 +75,10 @@ class MyIteratorWrapper
   // already done by std::iterator
   typedef typename IT_value_type<_Iterator>::value_type value_type;
 
-  // explicit ?
-  MyIteratorWrapper(_Iterator x) : p(x) {}
+  explicit MyIteratorWrapper(_Iterator x) : p(x) {}
   // default construct gives end
   MyIteratorWrapper() : p(nullptr) {}
-  MyIteratorWrapper(const MyIteratorWrapper &mit) : p(mit.p) {}
+  explicit MyIteratorWrapper(const MyIteratorWrapper &mit) : p(mit.p) {}
   // override this in Tqdm class
   MyIteratorWrapper &operator++() {
     // assert(this->bool() && "Out-of-bounds iterator increment");
@@ -95,6 +100,10 @@ class MyIteratorWrapper
   bool operator!=(const MyIteratorWrapper<Other> &rhs) {
     return p != rhs.p;
   }
+  // template <class Other>
+  // size_t operator-(const MyIteratorWrapper<Other> &rhs) {
+  //   return p - rhs.p;
+  // }
   virtual value_type &operator*() {
     // assert(this->bool() && "Invalid iterator dereference!");
     return *p;
@@ -118,7 +127,7 @@ class MyIteratorWrapper
   }*/
   template <typename = typename std::is_pointer<_Iterator> >
   operator bool() const {
-    return p;
+    return p != nullptr;
   }
 };
 

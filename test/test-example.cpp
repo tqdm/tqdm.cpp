@@ -3,23 +3,30 @@
 #include "tqdm/tqdm.h"
 
 int main() {
-  static const int N = 1 << 16;
+  static const size_t N = 1 << 13;
 
-  // pointer example
+  printf("pointer, pre-increment\n");
   int a[N];
-  for (int i = 0; i < N; ++i) a[i] = i;
-  for (auto i = tqdm::tqdm(a, a + N); i; ++i)
+  for (unsigned i = 0; i < N; ++i) a[i] = i;
+  // TODO: fix this:
+  // for (auto i = tqdm::tqdm(a, a + N); i; ++i)
+  for (auto i = tqdm::tqdm(a, a + N); i != i.end(); ++i)
     ;
 
-  // iterator example
+  printf("iterator, total, step\n");
   std::vector<int> b(N);
   std::memcpy(b.data(), a, sizeof(int) * N);
-  for (auto i = tqdm::tqdm(b.begin(), b.end()); i; i++)
+  for (auto i = tqdm::tqdm(b.begin(), N, 2); i; ++i)
     ;
 
-  // container example
+  printf("container, post-increment\n");
   for (auto i = tqdm::tqdm(b); i; i++)
     ;
+
+  printf("range-based loop example\n");
+  for (auto &i : tqdm::tqdm(b))
+    // if (i) printf("\r%d", i);
+    if (i < 0) printf(" \b");
 
   return 0;  // cat(stdin, stdout);
 }

@@ -27,6 +27,7 @@ Usage:
 #include <limits>     // numeric_limits
 #include <stdexcept>  // throw
 #include <utility>    // swap
+#include <string>     // string
 #include "tqdm/utils.h"
 
 #ifndef SIZE_T_MAX
@@ -146,9 +147,9 @@ _Tqdm tqdm(_Container& v) {
   return _Tqdm(v);
 }
 
-template <int N, typename T, typename _Tqdm = Tqdm<T*>>
+template <size_t N, typename T, typename _Tqdm = Tqdm<T*>>
 _Tqdm tqdm(T (&tab)[N]) {
-  return _Tqdm(tab);
+  return _Tqdm(tab, N);
 }
 
 using RangeTqdm = Tqdm<RangeIterator>;

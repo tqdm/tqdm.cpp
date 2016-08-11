@@ -1,6 +1,6 @@
 # Standard variables
 CC = gcc
-CXX = g++
+CXX = gcc
 CFLAGS = -g -O2 ${WARNINGS}
 CXXFLAGS = -g -O2 ${WARNINGS}
 LDFLAGS =
@@ -10,12 +10,12 @@ ARFLAGS = rcs
 
 
 # Project variables
-WARNINGS = -Werror -Wall -Wextra -Wunused -Wformat=2 -Wno-missing-field-initializers
+WARNINGS = -Wall -Wextra -Wunused -Wformat=2 -Wno-missing-field-initializers -ferror-limit=100
 
 # No end-user servicable parts below.
 
 override CFLAGS += -std=c99 -fPIC
-override CXXFLAGS += -std=c++11 -fPIC
+override CXXFLAGS += -std=c++11 -fPIC 
 
 override CPPFLAGS += -I ./include/
 

@@ -40,9 +40,8 @@ namespace tqdm
     }
 
     template<class Node>
-    void AtomicList<Node>::append(Node *node)
-    {
-        (void)node;
+    void AtomicList<Node>::append(Node *node) {
+        (void) node;
 #if 0
         Node *singular = &meta;
         // TODO when deletion is added, need to disable that
@@ -78,6 +77,6 @@ namespace tqdm
         // If we're wrong, nobody cares until the next append,
         // which will fix this anyway.
         this->approx_tail = &node->intrusive_link_next;
-    }
 #endif
+    }
 }

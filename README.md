@@ -23,12 +23,16 @@ iterable with "tqdm(iterable)", and you're done!
 ``` cpp
 #include "tqdm/tqdm.h"
 
+for (int i : tqdm::range(5))  // same as for(int i = 0; i < 5; ++i)
+  ...
+
+// or manually with and array or container:
 std::vector<int> a = {0, 1, 2, 3, 4, 5};
 for (int i : tqdm::tqdm(a))
   ...
 ```
 
-Here's what the output looks like:
+Here's what the output will look like:
 
 ``76%|████████████████████████████         | 7568/10000 [00:33<00:10, 229.00it/s]``
 
@@ -63,7 +67,7 @@ Licence
 Open Source (OSI approved): ![][Licence]
 
 
-![][Readme-Hits] (Since 19 May 2016)
+![][Readme-Hits] (Since 9 August 2016)
 
   [Logo]: https://raw.githubusercontent.com/tqdm/tqdm/master/logo.png
   [Screenshot]: https://raw.githubusercontent.com/tqdm/tqdm.cpp/master/images/tqdm.gif
@@ -72,4 +76,4 @@ Open Source (OSI approved): ![][Licence]
   [Github-Stars]: https://img.shields.io/github/stars/tqdm/tqdm.cpp.svg "https://github.com/tqdm/tqdm.cpp/stargazers"
   [Licence]: https://img.shields.io/pypi/l/tqdm.svg "https://raw.githubusercontent.com/tqdm/tqdm.cpp/master/LICENCE"
   [Readme-Hits]: http://hitt.herokuapp.com/tqdm/tqdm_cpp.svg
-  [Coverage Status]: https://coveralls.io/repos/github/tqdm/tqdm.cpp/badge.svg?branch=master "https://coveralls.io/github/tqdm/tqdm.cpp?branch=master"
+  [Coverage-Status]: https://coveralls.io/repos/github/tqdm/tqdm.cpp/badge.svg?branch=master "https://coveralls.io/github/tqdm/tqdm.cpp?branch=master"

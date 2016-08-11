@@ -28,5 +28,13 @@ int main() {
     // if (i) printf("\r%d", i);
     if (i < 0) printf(" \b");
 
+  printf("iterator-based range() example\n");
+  for (auto it = tqdm::range(N); it; ++it)
+    ;
+
+  printf("range-based range() example\n");
+  for (auto &i : tqdm::range(N))
+    if (i > 100000) printf(" "); // silence warnings
+
   return 0;  // cat(stdin, stdout);
 }

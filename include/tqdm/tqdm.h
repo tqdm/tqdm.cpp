@@ -109,6 +109,35 @@ class Tqdm : public TQDM_IT {
   operator bool() const { return this->get() != e; }
 };
 
+class RangeIterator : public std::iterator<std::forward_iterator_tag, size_t> {
+ private:
+  size_t current = 0;
+  size_t total;
+ public:
+  RangeIterator(size_t total) : total(total) {}
+  size_t& operator*() {
+    // TODO: should preferably return const size_t&
+    // but Tqdm doesn't allow it as of now
+    return current;
+  }
+  RangeIterator& operator++() {
+    ++current;
+    return *this;
+  }
+  // only use as (it != end), not as (end != it)
+  bool operator!=(const RangeIterator&) const {
+    return current < total;
+  }
+  bool operator==(const RangeIterator&) const {
+    return current >= total;
+  }
+  size_t operator-(const RangeIterator& it) const {
+    // it's used in `end - begin`, but `end` is only a sentinel
+    // so let's use `begin `to be consistent
+    return it.total - it.current;
+  }
+};
+
 template <typename _Iterator, typename _Tqdm = Tqdm<_Iterator>>
 _Tqdm tqdm(_Iterator begin, _Iterator end) {
   return _Tqdm(begin, end);
@@ -123,6 +152,11 @@ template <typename _Container,
           typename _Tqdm = Tqdm<typename _Container::iterator>>
 _Tqdm tqdm(_Container& v) {
   return _Tqdm(v);
+}
+
+using RangeTqdm = Tqdm<RangeIterator>;
+RangeTqdm range(size_t v) {
+  return RangeTqdm(RangeIterator(v), RangeIterator(v));
 }
 
 }  // tqdm

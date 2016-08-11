@@ -137,13 +137,6 @@ _MyIteratorWrapper myIteratorWrapper(_Iterator x) {
   return _MyIteratorWrapper(x);
 }
 
-template <typename IntType>
-/** TODO */
-class _range {
-  static const IntType IntTypeMax = std::numeric_limits<IntType>::max();
-  _range(IntType a, IntType b = IntTypeMax, IntType step = IntType(1));
-};
-
 // colorama win
 // weakset
 // _is_utf(encoding)

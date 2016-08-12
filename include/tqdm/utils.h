@@ -39,7 +39,7 @@ class MyIteratorWrapper
     : public std::iterator<
           std::forward_iterator_tag,
           typename std::iterator_traits<_Iterator>::value_type> {
-  mutable _Iterator p;  // TODO: remove this mutable
+  _Iterator p;
 
 public:
   // already done by std::iterator
@@ -52,19 +52,13 @@ public:
 
   // override this in Tqdm class
   virtual void _incr() { ++p; }
-  // override this in Tqdm class
-  virtual void _incr() const { ++p; }
 
   MyIteratorWrapper &operator++() {
     // assert(this->bool() && "Out-of-bounds iterator increment");
     _incr();
     return *this;
   }
-  const MyIteratorWrapper &operator++() const {
-    _incr();
-    return *this;
-  }
-  MyIteratorWrapper operator++(int) const {
+  MyIteratorWrapper operator++(int) {
     MyIteratorWrapper tmp(*this);
     _incr();
     return tmp;
@@ -79,26 +73,18 @@ public:
     return p != rhs.p;
   }
   template <class Other>
-  size_t operator-(const MyIteratorWrapper<Other> &rhs) {
+  size_t operator-(const MyIteratorWrapper<Other> &rhs) const {
     return p - rhs.p;
   }
   // template <typename = typename std::enable_if<
   //               !std::is_const<value_type>::value>::type>
-  value_type &operator*() {
-    // assert(this->bool() && "Invalid iterator dereference!");
-    return *p;
-  }
-  const value_type &operator*() const {
+  value_type &operator*() const {
     // assert(this->bool() && "Invalid iterator dereference!");
     return *p;
   }
   // template <typename = typename std::enable_if<
   //               !std::is_const<value_type>::value>::type>
-  value_type &operator->() {
-    // assert(this->bool() && "Invalid iterator dereference!");
-    return *p;
-  }
-  const value_type &operator->() const {
+  value_type &operator->() const {
     // assert(this->bool() && "Invalid iterator dereference!");
     return *p;
   }
@@ -131,9 +117,9 @@ _MyIteratorWrapper myIteratorWrapper(_Iterator x) {
 
 template <typename IntType = int>
 class RangeIterator
-    : public std::iterator<std::forward_iterator_tag, IntType> {
+    : public std::iterator<std::forward_iterator_tag, const IntType> {
 private:
-  mutable IntType current;
+  IntType current;
   IntType total;
   IntType step;
 
@@ -143,17 +129,12 @@ public:
       : current(start), total(total), step(1) {}
   RangeIterator(IntType start, IntType total, IntType step)
       : current(start), total(total), step(step) {}
-  IntType &operator*() { return current; }
   const IntType &operator*() const { return current; }
   RangeIterator &operator++() {
     current += step;
     return *this;
   }
-  const RangeIterator &operator++() const {
-    current += step;
-    return *this;
-  }
-  RangeIterator operator++(int) const {
+  RangeIterator operator++(int) {
     RangeIterator tmp(*this);
     operator++();
     return tmp;

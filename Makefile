@@ -62,7 +62,7 @@ obj/%.c.o: %.c
 	${CC} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<
 
 obj/%.cpp.o: %.cpp
-	clang-format-3.8 -style="{BasedOnStyle: Google, SortIncludes: false}" -i $^
+	clang-format -style=file -i $^
 	${MKDIR_FIRST}
 	${CXX} ${CXXFLAGS} ${CPPFLAGS} -c -o $@ $<
 

@@ -7,7 +7,8 @@ int main() {
 
   printf("pointer, pre-increment\n");
   int a[N];
-  for (unsigned i = 0; i < N; ++i) a[i] = i;
+  for (unsigned i = 0; i < N; ++i)
+    a[i] = i;
   // TODO: fix this:
   // for (auto i = tqdm::tqdm(a, a + N); i; ++i)
   for (auto i = tqdm::tqdm(a, a + N); i != i.end(); ++i)
@@ -26,12 +27,14 @@ int main() {
   printf("range-based container\n");
   for (auto &i : tqdm::tqdm(b))
     // if (i) printf("\r%d", i);
-    if (i < 0) printf(" \b");
+    if (i < 0)
+      printf(" \b");
 
   printf("range-based array\n");
   // for (auto it = tqdm::tqdm(a); *it < a[N - 1]; ++it)
   for (auto &i : tqdm::tqdm(a))
-    if (i < 0) printf(" \b");
+    if (i < 0)
+      printf(" \b");
 
   printf("iterator-based pythonic range()\n");
   for (auto it = tqdm::range(N); it; ++it)
@@ -39,7 +42,8 @@ int main() {
 
   printf("ye moste pythonic range(), auto type inference\n");
   for (auto &i : tqdm::range(float(N)))
-    if (i < 0.0f) printf(" \b");
+    if (i < 0.0f)
+      printf(" \b");
 
   return 0;
 }

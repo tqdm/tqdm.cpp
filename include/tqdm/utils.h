@@ -28,6 +28,10 @@
 #define explicit
 #endif
 
+#ifndef noexcept
+#define noexcept
+#endif
+
 namespace tqdm {
 
 template <typename _Iterator>

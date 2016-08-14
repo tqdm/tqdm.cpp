@@ -46,14 +46,14 @@ struct Params {
   bool leave = true;
   FILE *f = stderr;
   int ncols = -1;
-  float mininterval = 0.1, maxinterval = 10.0;
+  float mininterval = 0.1f, maxinterval = 10.0f;
   unsigned miniters = -1;
   std::string ascii = " 123456789#";
   bool disable = false;
   std::string unit = "it";
   bool unit_scale = false;
   bool dynamic_ncols = false;
-  float smoothing = 0.3;
+  float smoothing = 0.3f;
   std::string bar_format;
   size_t initial = 0;
   int position = -1;
@@ -84,7 +84,7 @@ public:
    */
   explicit Tqdm(_Iterator begin, _Iterator end)
       : TQDM_IT(begin), e(end), self() {
-    self.total = end - begin;
+    self.total = size_t(end - begin);
   }
 
   explicit Tqdm(_Iterator begin, size_t total)

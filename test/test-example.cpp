@@ -41,7 +41,8 @@ int main() {
     ;
 
   printf("ye moste pythonic range(), auto type inference\n");
-  for (auto &i : tqdm::range(float(N)))
+  float m = 2, n = float(N), s = 2;
+  for (auto &i : tqdm::range(m, n, s))
     if (i < 0.0f)
       printf(" \b");
 

@@ -148,9 +148,19 @@ _Tqdm tqdm(T (&tab)[N]) {
 
 template <typename SizeType = int>
 using RangeTqdm = Tqdm<RangeIterator<SizeType>>;
-template <typename SizeType> RangeTqdm<SizeType> range(SizeType v) {
-  return RangeTqdm<SizeType>(RangeIterator<SizeType>(v),
-                             RangeIterator<SizeType>(v));
+template <typename SizeType> RangeTqdm<SizeType> range(SizeType n) {
+  return RangeTqdm<SizeType>(RangeIterator<SizeType>(n),
+                             RangeIterator<SizeType>(n));
+}
+template <typename SizeType>
+RangeTqdm<SizeType> range(SizeType start, SizeType end) {
+  return RangeTqdm<SizeType>(RangeIterator<SizeType>(start, end),
+                             RangeIterator<SizeType>(start, end));
+}
+template <typename SizeType>
+RangeTqdm<SizeType> range(SizeType start, SizeType end, SizeType step) {
+  return RangeTqdm<SizeType>(RangeIterator<SizeType>(start, end, step),
+                             RangeIterator<SizeType>(start, end, step));
 }
 
 }  // tqdm

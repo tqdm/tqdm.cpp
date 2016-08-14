@@ -173,7 +173,7 @@ public:
   IntType operator-(const RangeIterator &it) const {
     // it's used in `end - begin`, but `end` is only a sentinel
     // so let's use `begin `to be consistent
-    return it.total - it.current;
+    return it.size_remaining();
   }
 };
 

@@ -16,7 +16,7 @@ tqdm
 `tqdm` (read taqadum, تقدّم) means "progress" in arabic.
 
 Instantly make your loops show a smart progress meter - just wrap any
-iterable with "tqdm(iterable)", and you're done!
+iterable with `tqdm(iterable)`, and you're done!
 
 ``` cpp
 #include "tqdm/tqdm.h"
@@ -47,7 +47,7 @@ $ seq 9999999 | tqdm --unit_scale | wc -l
 Contributions
 -------------
 
-All source code is hosted on [github](https://github.com/tqdm/tqdm.cpp).
+All source code is hosted on [GitHub](https://github.com/tqdm/tqdm.cpp).
 Contributions are welcome.
 
 See the

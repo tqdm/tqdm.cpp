@@ -3,7 +3,7 @@
 tqdm
 ====
 
-C++ port of the popular python module, [tqdm](https://github/tqdm/tqdm). Work in progress (pre-alpha)
+**Official** C++ port of the popular python module, [tqdm](https://github/tqdm/tqdm). Work in progress (pre-alpha)
 
 <!--
 ![][Build-Status] ![][Coverage-Status] ![][Branch-Coverage-Status]

@@ -10,3 +10,21 @@ the [repository](https://github.com/tqdm/tqdm.cpp) and open a
 There also exists an ad-hoc
 [chat room](http://chat.stackexchange.com/rooms/43704/tqdm-cpp)
 for discussion on small issues.
+
+
+# Building
+
+To build and test on any system and IDE, use `CMake`.
+For example, on a UNIX system with `Make`:
+
+``` sh
+tqdm.cpp$ mkdir -p build    # create build directory
+tqdm.cpp$ cd build
+tqdm.cpp/build$ cmake ..    # generate system config files
+tqdm.cpp/build$ make        # build and test
+```
+
+Builds have been tested on these configurations:
+- Windows 10 x64, MSVC 2013
+- Ubuntu LTS x64
+- Debian Jessie ARMv8

@@ -50,6 +50,15 @@ $ seq 9999999 | tqdm --unit_scale | wc -l
 ```
 
 
+Installation
+------------
+
+No installation or dependencies are required. `tqdm` is header-only.
+Simply copy or add the `include` directory to your project.
+Best-practice recommendation is to add this repo as a submodule to projects.
+Once added, simply `#include "tqdm/tqdm.h"`.
+
+
 Contributions
 -------------
 

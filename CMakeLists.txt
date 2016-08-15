@@ -96,35 +96,38 @@ add_executable(test_tqdm ${TQDM_TEST_FILES})  # ${TQDM_PCH}
 
 ## target_link_libraries(tqdm)
 
+if(UNIX)
+
 add_custom_command(
-  OUTPUT tqdm.debug
-  COMMAND [ -f tqdm.debug ] || objcopy --only-keep-debug tqdm tqdm.debug
+  TARGET tqdm
+  COMMAND objcopy --only-keep-debug tqdm tqdm.debug
   COMMAND strip -g tqdm
   COMMAND objcopy --add-gnu-debuglink=tqdm.debug tqdm
-  DEPENDS tqdm
   COMMENT "Separating debug symbols"
   VERBATIM
-)
-
-add_custom_target(
-  StripDebug ALL
-  DEPENDS tqdm.debug
 )
 
 add_custom_command(
-  OUTPUT test_tqdm.debug
-  COMMAND [ -f test_tqdm.debug ] || objcopy --only-keep-debug test_tqdm test_tqdm.debug
+  TARGET test_tqdm
+  POST_BUILD
+  COMMAND objcopy --only-keep-debug test_tqdm test_tqdm.debug
   COMMAND strip -g test_tqdm
   COMMAND objcopy --add-gnu-debuglink=test_tqdm.debug test_tqdm
-  DEPENDS test_tqdm
   COMMENT "Separating debug symbols"
   VERBATIM
 )
 
-add_custom_target(
-  StripDebugTest ALL
-  DEPENDS test_tqdm.debug
-)
+# add_custom_command(
+#   TARGET tqdmlib
+#   POST_BUILD
+#   COMMAND objcopy --only-keep-debug ${TARGET} tqdmlib.debug
+#   COMMAND strip -g ${TARGET}
+#   COMMAND objcopy --add-gnu-debuglink=tqdmlib.debug ${TARGET}
+#   COMMENT "Separating debug symbols"
+#   VERBATIM
+# )
+
+endif(UNIX)
 
 add_custom_command(
   TARGET test_tqdm

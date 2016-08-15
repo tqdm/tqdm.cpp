@@ -74,7 +74,6 @@ public:
   // actually current value
   // virtual _Iterator begin() { return this->get(); }
   Tqdm &begin() { return *this; }
-  const Tqdm &begin() const { return *this; }
   // virtual _Iterator end() { return e; }
   Tqdm end() const { return Tqdm(e, e); }
 
@@ -111,7 +110,7 @@ public:
   explicit operator bool() const { return this->get() != e; }
 
   /** TODO: magic methods */
-  virtual void _incr() const override {
+  virtual void _incr() override {
     if (this->get() == e)
       throw std::out_of_range(
           "exhausted");  // TODO: don't throw, just double total
@@ -122,7 +121,6 @@ public:
     } else
       printf("\r%" PRIi64 " left", (int64_t)(e - this->get()));
   }
-  virtual void _incr() override { ((Tqdm const &)*this)._incr(); }
 };
 
 template <typename _Iterator, typename _Tqdm = Tqdm<_Iterator>>

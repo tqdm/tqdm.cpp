@@ -25,8 +25,8 @@ Usage:
 
 #include <cassert>    // assert
 #include <cinttypes>  // PRIu64
-#include <cstdint>    // int64_t
 #include <cstddef>    // ptrdiff_t, size_t
+#include <cstdint>    // int64_t
 #include <iterator>   // iterator
 #include <limits>     // numeric_limits
 #include <stdexcept>  // throw
@@ -103,8 +103,7 @@ public:
   template <typename _Container,
             typename = typename std::enable_if<
                 !std::is_same<_Container, Tqdm>::value>::type>
-  Tqdm(_Container &v)
-      : TQDM_IT(std::begin(v)), e(std::end(v)), self() {
+  Tqdm(_Container &v) : TQDM_IT(std::begin(v)), e(std::end(v)), self() {
     self.total = e - this->get();
   }
 

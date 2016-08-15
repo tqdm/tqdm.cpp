@@ -117,23 +117,15 @@ add_custom_command(
   VERBATIM
 )
 
-# add_custom_command(
-#   TARGET tqdmlib
-#   POST_BUILD
-#   COMMAND objcopy --only-keep-debug ${TARGET} tqdmlib.debug
-#   COMMAND strip -g ${TARGET}
-#   COMMAND objcopy --add-gnu-debuglink=tqdmlib.debug ${TARGET}
-#   COMMENT "Separating debug symbols"
-#   VERBATIM
-# )
+# don't need to strip symbols from lib
 
 endif(UNIX)
 
 add_custom_command(
   TARGET test_tqdm
   POST_BUILD
-  COMMENT "Testing"
   COMMAND test_tqdm
+  COMMENT "Testing"
   VERBATIM
   USES_TERMINAL
 )

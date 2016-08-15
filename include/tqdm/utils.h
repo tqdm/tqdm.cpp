@@ -68,7 +68,7 @@ public:
     _incr();
     return *this;
   }
-  MyIteratorWrapper operator++(int) const {
+  MyIteratorWrapper operator++(int)const {
     MyIteratorWrapper tmp(*this);
     _incr();
     return tmp;
@@ -157,7 +157,7 @@ public:
     current += step;
     return *this;
   }
-  RangeIterator operator++(int) const {
+  RangeIterator operator++(int)const {
     RangeIterator tmp(*this);
     operator++();
     return tmp;

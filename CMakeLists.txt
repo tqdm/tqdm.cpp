@@ -11,9 +11,19 @@ if(POLICY CMP0043)
 cmake_policy(SET CMP0043 OLD)
 endif(POLICY CMP0043)
 
+if(MSVC)
 set(STANDARD_COMPILE_OPTS /WX /D_SCL_SECURE_NO_WARNINGS)
 set(REL_OPTS /GL /Zi)
 set(REL_WITH_DEB_OPTS /Ob2) # Ob1 override a strange default on inlining that cmake uses for RelWithDeb builds
+endif(MSVC)
+
+if(UNIX)
+  set(STANDARD_COMPILE_OPTS -g -Werror -Wall -Wextra -Wunused "-Wformat=2" "-std=c++11" -fPIC)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Werror -Wall -Wextra -Wunused -Wformat=2 -std=c++11 -fPIC")
+  set(REL_OPTS -fwhole-program)
+  set(REL_WITH_DEB_OPTS -O2)
+endif(UNIX)
+
 add_compile_options("$<$<CONFIG:DEBUG>:${STANDARD_COMPILE_OPTS}>")
 add_compile_options("$<$<CONFIG:MINSIZEREL>:${STANDARD_COMPILE_OPTS}>")
 add_compile_options("$<$<CONFIG:RELWITHDEBINFO>:${STANDARD_COMPILE_OPTS}>")
@@ -29,7 +39,9 @@ ADD_LINKER_FLAGS_EXE("/DEBUG" Release FORCE)
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+if(MSVC)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+endif(MSVC)
 
 # We're not consitent about whether global should be /hwk or not...
 # Perhaps RTIP itself needs global hwk in path (to build cpps) but not client
@@ -63,7 +75,9 @@ set(TQDM_LIB_FILES
 # set(TEST_OBJECTS $(patsubst %,obj/%.o,${TEST_SOURCES}))
 
 # Make extra debug info available on optimised builds
+if(MSVC)
 add_definitions(-Zo)
+endif(MSVC)
 
 # Function for creating RTIP apps.
 # To create a new app just call this with some options from some subdirectory.
@@ -76,7 +90,7 @@ include_directories(${TQDM_INCLUDE_DIR} ${TQDM_SRC_DIR})
 
 # lib
 set(options STATIC_LIBRARY)
-add_library(libtqdm STATIC ${TQDM_LIB_FILES})  # ${TQDM_PCH}
+add_library(tqdmlib STATIC ${TQDM_LIB_FILES})  # ${TQDM_PCH}
 # add_precompiled_header(libtqdm "${TQDM_SRC_DIR}/stdafx.h" FORCEINCLUDE
 #   SOURCE_CXX "${TQDM_SRC_DIR}/stdafx.cpp")
 
@@ -91,3 +105,47 @@ add_executable(test_tqdm ${TQDM_TEST_FILES})  # ${TQDM_PCH}
 #   SOURCE_CXX "${TQDM_SRC_DIR}/stdafx.cpp")
 
 ## target_link_libraries(tqdm)
+
+add_custom_command(
+  OUTPUT tqdm.debug
+  COMMAND [ -f tqdm.debug ] || objcopy --only-keep-debug tqdm tqdm.debug
+  COMMAND strip -g tqdm
+  COMMAND objcopy --add-gnu-debuglink=tqdm.debug tqdm
+  DEPENDS tqdm
+  COMMENT "Separating debug symbols"
+  VERBATIM
+)
+
+add_custom_target(
+  StripDebug ALL
+  DEPENDS tqdm.debug
+)
+
+add_custom_command(
+  OUTPUT test_tqdm.debug
+  COMMAND [ -f test_tqdm.debug ] || objcopy --only-keep-debug test_tqdm test_tqdm.debug
+  COMMAND strip -g test_tqdm
+  COMMAND objcopy --add-gnu-debuglink=test_tqdm.debug test_tqdm
+  DEPENDS test_tqdm
+  COMMENT "Separating debug symbols"
+  VERBATIM
+)
+
+add_custom_target(
+  StripDebugTest ALL
+  DEPENDS test_tqdm.debug
+)
+
+add_custom_command(
+  OUTPUT test_tqdm.txt
+  COMMAND ./test_tqdm > test_tqdm.txt
+  DEPENDS test_tqdm
+  COMMENT "Testing"
+  VERBATIM
+)
+
+add_custom_target(
+  RunTest ALL
+  DEPENDS test_tqdm.txt
+)
+

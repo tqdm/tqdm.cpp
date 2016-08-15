@@ -19,6 +19,8 @@ Usage:
   //   std::vector<int> v{0, 1, 2, 3};
   //   for (int &i : tqdm::tqdm(v.begin(), v.end())
     ...
+
+@author Casper dC-L <github.com/casperdcl>
 */
 
 #include <cassert>    // assert
@@ -37,8 +39,6 @@ static const size_t SIZE_T_MAX = std::numeric_limits<size_t>::max();
 #endif
 
 namespace tqdm {
-
-const char *author[] = {"github.com/casperdcl"};
 
 struct Params {
   std::string desc;

@@ -15,33 +15,27 @@ if(MSVC)
 set(STANDARD_COMPILE_OPTS /WX /D_SCL_SECURE_NO_WARNINGS)
 set(REL_OPTS /GL /Zi)
 set(REL_WITH_DEB_OPTS /Ob2) # Ob1 override a strange default on inlining that cmake uses for RelWithDeb builds
-endif(MSVC)
-
-if(UNIX)
-  set(STANDARD_COMPILE_OPTS -g -Werror -Wall -Wextra -Wunused "-Wformat=2" "-std=c++11" -fPIC)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Werror -Wall -Wextra -Wunused -Wformat=2 -std=c++11 -fPIC")
-  set(REL_OPTS -fwhole-program)
-  set(REL_WITH_DEB_OPTS -O2)
-endif(UNIX)
-
 add_compile_options("$<$<CONFIG:DEBUG>:${STANDARD_COMPILE_OPTS}>")
 add_compile_options("$<$<CONFIG:MINSIZEREL>:${STANDARD_COMPILE_OPTS}>")
 add_compile_options("$<$<CONFIG:RELWITHDEBINFO>:${STANDARD_COMPILE_OPTS}>")
 add_compile_options("$<$<CONFIG:RELWITHDEBINFO>:${REL_WITH_DEB_OPTS}>")
 add_compile_options("$<$<CONFIG:RELEASE>:${STANDARD_COMPILE_OPTS}>")
 add_compile_options("$<$<CONFIG:RELEASE>:${REL_OPTS}>")
-SET(CMAKE_MFC_FLAG 0) 
+SET(CMAKE_MFC_FLAG 0)
+
 include(FlagUtilities.cmake)
 # This is the only use of FlagUtilities.cmake - can we do it another way?
 ADD_LINKER_FLAGS("/LTCG" Release FORCE)
 ADD_LINKER_FLAGS_EXE("/DEBUG" Release FORCE)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+endif(MSVC)
+
+if(UNIX)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Werror -Wall -Wextra -Wunused -Wformat=2 -std=c++11 -fPIC -fwhole-program -O2")
+endif(UNIX)
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-if(MSVC)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-endif(MSVC)
 
 # We're not consitent about whether global should be /hwk or not...
 # Perhaps RTIP itself needs global hwk in path (to build cpps) but not client
@@ -79,10 +73,6 @@ if(MSVC)
 add_definitions(-Zo)
 endif(MSVC)
 
-# Function for creating RTIP apps.
-# To create a new app just call this with some options from some subdirectory.
-# Look at AnalysisApplication/CMakeLists.txt for examples.
-
 # include(PrecompiledHeader.cmake)
 
 include_directories(${TQDM_INCLUDE_DIR} ${TQDM_SRC_DIR})
@@ -96,12 +86,12 @@ add_library(tqdmlib STATIC ${TQDM_LIB_FILES})  # ${TQDM_PCH}
 
 # bin
 add_executable(tqdm ${TQDM_BIN_FILES})  # ${TQDM_PCH}
-# add_precompiled_header(libtqdm "${TQDM_SRC_DIR}/stdafx.h" FORCEINCLUDE
+# add_precompiled_header(tqdm "${TQDM_SRC_DIR}/stdafx.h" FORCEINCLUDE
 #   SOURCE_CXX "${TQDM_SRC_DIR}/stdafx.cpp")
 
 # test
 add_executable(test_tqdm ${TQDM_TEST_FILES})  # ${TQDM_PCH}
-# add_precompiled_header(libtqdm "${TQDM_SRC_DIR}/stdafx.h" FORCEINCLUDE
+# add_precompiled_header(test_tqdm "${TQDM_SRC_DIR}/stdafx.h" FORCEINCLUDE
 #   SOURCE_CXX "${TQDM_SRC_DIR}/stdafx.cpp")
 
 ## target_link_libraries(tqdm)
@@ -137,15 +127,10 @@ add_custom_target(
 )
 
 add_custom_command(
-  OUTPUT test_tqdm.txt
-  COMMAND ./test_tqdm > test_tqdm.txt
-  DEPENDS test_tqdm
+  TARGET test_tqdm
+  POST_BUILD
   COMMENT "Testing"
+  COMMAND test_tqdm
   VERBATIM
+  USES_TERMINAL
 )
-
-add_custom_target(
-  RunTest ALL
-  DEPENDS test_tqdm.txt
-)
-

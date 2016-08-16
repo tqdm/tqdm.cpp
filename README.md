@@ -23,13 +23,19 @@ iterable with "tqdm(iterable)", and you're done!
 ``` cpp
 #include "tqdm/tqdm.h"
 
-for (int i : tqdm::range(5))  // same as for(int i = 0; i < 5; ++i)
+for (int i : tqdm::range(5))  // for(int i = 0; i < 5; ++i)
   ...
 
-// or manually with and array or container:
-std::vector<float> a = {0, 1, 2, 3, 4, 5};
-for (float &i : tqdm::tqdm(a))
+// even more pythonic
+// for(float i = 2.3f; i < 9.1f; i += 0.1f)
+for (auto i : tqdm::range(2.3f, 9.1f, 0.1f))
   ...
+
+// container and iterator wrappers
+std::vector<unsigned int> a = {0, 1, 2, 3, 4, 5};
+for (auto &i : tqdm::tqdm(a))
+  for (auto &j : tqdm::tqdm(a.begin(), a.end()))
+    i += j;
 ```
 
 Here's what the output will look like:

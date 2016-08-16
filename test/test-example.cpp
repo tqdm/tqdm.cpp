@@ -46,5 +46,14 @@ int main() {
     if (i < 0.0f)
       printf(" \b");
 
+  printf("demonstrate modifiable references\n");
+  std::vector<float> foo = {0, 1, 2, 3, 4, 5};
+  for (float &i : tqdm::tqdm(foo))
+    for (float &j : tqdm::tqdm(foo.begin(), foo.end()))
+      i += j;
+  for (float &i : foo)
+    printf("%.5f ", i);
+  printf("\n");
+
   return 0;
 }

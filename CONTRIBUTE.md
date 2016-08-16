@@ -25,6 +25,10 @@ tqdm.cpp/build$ make        # build and test
 ```
 
 Builds have been tested on these configurations:
+
 - Windows 10 x64, MSVC 2013
 - Ubuntu LTS x64
+- Travis Ubuntu Trusty
+    - g++-5, g++-4.9
+    - clang++-3.6, clang++-3.7, clang++-3.8
 - Debian Jessie ARMv8

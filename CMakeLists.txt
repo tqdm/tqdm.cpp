@@ -30,9 +30,13 @@ ADD_LINKER_FLAGS_EXE("/DEBUG" Release FORCE)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 endif(MSVC)
 
-if(UNIX)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Werror -Wall -Wextra -Wunused -Wformat=2 -std=c++11 -fPIC -fwhole-program -O2")
-endif(UNIX)
+if (NOT (("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel") OR MSVC))
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Werror -Wall -Wextra -Wunused -Wformat=2 -std=c++11 -fPIC -O2")
+endif()
+
+if (CMAKE_COMPILER_IS_GNUCXX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fwhole-program")
+endif()
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

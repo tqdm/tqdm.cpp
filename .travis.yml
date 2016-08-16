@@ -9,9 +9,6 @@ env:
   - COMPILER=clang++-3.8
   - COMPILER=clang++-3.7
   - COMPILER=clang++-3.6
-compiler:
-  - clang
-  - gcc
 addons:
   apt:
     # add PPAs with more up-to-date toolchains

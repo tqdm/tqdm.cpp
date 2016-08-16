@@ -21,6 +21,6 @@ SpaceBeforeAssignmentOperators: true
 ContinuationIndentWidth: 4
 CommentPragmas:  '^ IWYU pragma:'
 ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
-# SortIncludes: false
+# SortIncludes: false  # uncomment this for clang-format>=3.8
 ...
 

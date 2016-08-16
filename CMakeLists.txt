@@ -110,6 +110,15 @@ add_custom_command(
   COMMENT "Separating debug symbols"
   VERBATIM
 )
+if(CFMT)
+add_custom_command(
+  TARGET tqdm
+  PRE_BUILD
+  COMMAND clang-format -i -style=file ${TQDM_BIN_FILES}
+  COMMENT "Linting"
+  USES_TERMINAL
+)
+endif(CFMT)
 
 add_custom_command(
   TARGET test_tqdm
@@ -120,8 +129,26 @@ add_custom_command(
   COMMENT "Separating debug symbols"
   VERBATIM
 )
+if(CFMT)
+add_custom_command(
+  TARGET test_tqdm
+  PRE_BUILD
+  COMMAND clang-format -i -style=file ${TQDM_TEST_FILES}
+  COMMENT "Linting"
+  USES_TERMINAL
+)
+endif(CFMT)
 
 # don't need to strip symbols from lib
+if(CFMT)
+add_custom_command(
+  TARGET tqdmlib
+  PRE_BUILD
+  COMMAND clang-format -i -style=file ${TQDM_LIB_FILES}
+  COMMENT "Linting"
+  USES_TERMINAL
+)
+endif(CFMT)
 
 endif(UNIX)
 

@@ -3,32 +3,67 @@ dist: trusty
 language: cpp
 notifications:
   email: false
-env:
-  - COMPILER=g++-5
-  - COMPILER=g++-4.9
-  - COMPILER=clang++-3.8
-  - COMPILER=clang++-3.7
-  - COMPILER=clang++-3.6
-addons:
-  apt:
-    # add PPAs with more up-to-date toolchains
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - g++-5
-      - g++-4.9
-before_install:
-  - wget -nv -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
-  - sudo apt-add-repository -y 'deb http://llvm.org/apt/trusty llvm-toolchain-trusty-3.6 main'
-  - sudo apt-add-repository -y 'deb http://llvm.org/apt/trusty llvm-toolchain-trusty-3.7 main'
-  - sudo apt-add-repository -y 'deb http://llvm.org/apt/trusty llvm-toolchain-trusty-3.8 main'
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq -y clang-3.6 clang-3.7 clang-3.8
-  # fix a crash with multiprocessing on Travis
-  - sudo rm -rf /dev/shm
-  - sudo ln -s /run/shm /dev/shm
-  - alias clang-format='clang-format-3.7'
+matrix:
+  include:
+    # preferred compiler, does clang-format
+    - compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.7
+          packages:
+            - clang-3.7
+      env:
+        - COMPILER=clang++-3.7
+        - CFMT=1
+      before_install:
+        # fix a crash with multiprocessing on Travis
+        - sudo rm -rf /dev/shm
+        - sudo ln -s /run/shm /dev/shm
+        - alias clang-format='clang-format-3.7'
+    # recent g++
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env: COMPILER=g++-5
+    # recent clang++
+    - compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+      env: COMPILER=clang++-3.8
+      before_install:
+        - wget -nv -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
+        - sudo apt-add-repository -y 'deb http://llvm.org/apt/trusty llvm-toolchain-trusty-3.8 main'
+        - sudo apt-get update -qq
+        - sudo apt-get install -qq -y clang-3.8
+        # fix a crash with multiprocessing on Travis
+        - sudo rm -rf /dev/shm
+        - sudo ln -s /run/shm /dev/shm
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env: COMPILER=g++-4.9
+    - compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6
+      env: COMPILER=clang++-3.6
 script:
   - mkdir build
   - cd build
-  - cmake -DCMAKE_CXX_COMPILER=$COMPILER .. && make
+  - cmake -DCFMT:BOOL=$CFMT -DCMAKE_CXX_COMPILER=$COMPILER .. && make

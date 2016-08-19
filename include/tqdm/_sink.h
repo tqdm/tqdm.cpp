@@ -2,8 +2,8 @@
 
 #include <atomic>
 
-#include "tqdm/fwd.hpp"
-#include "tqdm/list.hpp"
+#include "tqdm/_fwd.h"
+#include "tqdm/_list.h"
 
 
 namespace tqdm

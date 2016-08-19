@@ -1,4 +1,4 @@
-#include "tqdm/sink.hpp"
+#include "tqdm/_sink.h"
 
 #include <unistd.h>
 

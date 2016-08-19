@@ -1,10 +1,42 @@
-// no include guards - only included from one file
+#pragma once
 
+#include <type_traits>
 #include <cassert>
+
+#include "tqdm/_fwd.h"
 
 
 namespace tqdm
 {
+    // CRTP
+    template<class Node>
+    class AtomicNode
+    {
+        friend class AtomicList<Node>;
+
+        std::atomic<Node *> intrusive_link_next;
+        std::atomic<Node *> intrusive_link_prev;
+
+        AtomicNode(Node *next, Node *prev);
+    public:
+        // Node is initially unattached
+        AtomicNode();
+        ~AtomicNode();
+    };
+
+    // A non-owning intrusive linked list,
+    // using atomics to ensure thread- and signal- safety.
+    template<class Node>
+    class AtomicList
+    {
+        AtomicNode<Node> meta;
+    public:
+        AtomicList();
+        ~AtomicList();
+
+        void append(Node *node);
+    };
+
     template<class Node>
     AtomicNode<Node>::AtomicNode(Node *next, Node *prev)
     {

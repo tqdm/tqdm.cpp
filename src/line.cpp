@@ -1,8 +1,8 @@
-#include "tqdm/line.hpp"
+#include "tqdm/_line.h"
 
 #include <cstring>
 
-#include "util.hpp"
+#include "util.h"
 
 
 namespace tqdm

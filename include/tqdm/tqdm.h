@@ -23,19 +23,21 @@ Usage:
 @author Casper dC-L <github.com/casperdcl>
 */
 
-#include <cassert>    // assert
-#include <cinttypes>  // PRIu64
-#include <cstddef>    // ptrdiff_t, size_t
-#include <cstdint>    // int64_t
-#include <iterator>   // iterator
-#include <limits>     // numeric_limits
-#include <stdexcept>  // throw
-#include <string>     // string
-#include <utility>    // swap
+#include <cassert>      // assert
+#include <cinttypes>    // PRIu64
+#include <cstddef>      // ptrdiff_t, size_t
+#include <cstdint>      // int64_t
+#include <cstdio>       // printf
+#include <iterator>     // iterator
+#include <limits>       // numeric_limits
+#include <stdexcept>    // throw
+#include <string>       // string
+#include <type_traits>  // is_pointer, ...
+#include <utility>      // swap
 #include "tqdm/utils.h"
 
 #ifndef SIZE_T_MAX
-static const size_t SIZE_T_MAX = std::numeric_limits<size_t>::max();
+constexpr size_t SIZE_T_MAX = std::numeric_limits<size_t>::max();
 #endif
 
 namespace tqdm {

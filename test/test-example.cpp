@@ -1,3 +1,4 @@
+#include "../src/stdafx.h"
 #include <cstring>  //memcpy
 #include <vector>
 #include "tqdm/tqdm.h"

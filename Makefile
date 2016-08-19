@@ -9,7 +9,7 @@ AR = ar
 ARFLAGS = rcs
 
 # Project variables
-WARNINGS = -Werror -Wall -Wextra -Wunused -Wformat=2
+WARNINGS = -Werror -Wall -Wextra -Wunused -Wformat=2 -Wno-missing-field-initializers
 
 override CFLAGS += -std=c99 -fPIC
 override CXXFLAGS += -std=c++11 -fPIC

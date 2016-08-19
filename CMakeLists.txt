@@ -31,7 +31,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 endif(MSVC)
 
 if (NOT (("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel") OR MSVC))
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Werror -Wall -Wextra -Wunused -Wformat=2 -std=c++11 -fPIC -O2")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Werror -Wall -Wextra -Wunused -Wformat=2 -Wno-missing-field-initializers -std=c++11 -fPIC -O2")
 endif()
 
 if (CMAKE_COMPILER_IS_GNUCXX)

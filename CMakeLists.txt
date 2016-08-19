@@ -46,12 +46,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # applications.
 set(TQDM_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(TQDM_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-# file(GLOB TQDM_INTERNAL_HEADERS "${TQDM_SRC_DIR}/*.h")
-set(TQDM_PCH
-  # ${TQDM_INTERNAL_HEADERS}
-  "${TQDM_SRC_DIR}/stdafx.cpp"
-  "${TQDM_SRC_DIR}/stdafx.h"
-)
+file(GLOB TQDM_PCH "${TQDM_SRC_DIR}/*.h")
 set(TQDM_BIN_FILES
   "${TQDM_SRC_DIR}/main.cpp"
   # ${TQDM_PCH}
@@ -77,10 +72,10 @@ if(MSVC)
 add_definitions(-Zo)
 endif(MSVC)
 
-# include(PrecompiledHeader.cmake)
-
 include_directories(${TQDM_INCLUDE_DIR} ${TQDM_SRC_DIR})
-## link_directories(${TQDM_SRC_DIR})
+link_directories(${TQDM_SRC_DIR})
+
+# include(PrecompiledHeader.cmake)
 
 # lib
 set(options STATIC_LIBRARY)
@@ -98,57 +93,57 @@ add_executable(test_tqdm ${TQDM_TEST_FILES})  # ${TQDM_PCH}
 # add_precompiled_header(test_tqdm "${TQDM_SRC_DIR}/stdafx.h" FORCEINCLUDE
 #   SOURCE_CXX "${TQDM_SRC_DIR}/stdafx.cpp")
 
+if(CMAKE_COMPILER_IS_GNUCXX)
+# add_executable(stdafx.h.gch "${TQDM_SRC_DIR}/stdafx.h")
+
+# add_custom_command(
+#   OUTPUT "${TQDM_SRC_DIR}/stdafx.h.gch"
+#   COMMAND "${CXX}" "${CMAKE_CXX_FLAGS}" "-o" "${TQDM_SRC_DIR}/stdafx.h.gch" "${TQDM_SRC_DIR}/stdafx.h"
+#   MAIN_DEPENDENCY "${TQDM_SRC_DIR}/stdafx.h"
+#   COMMENT "Precompiling headers"
+# )
+
+add_custom_target(
+  pch
+  ${CMAKE_CXX_COMPILER} -g -Werror -Wall -Wextra -Wunused -Wformat=2 -std=c++11 -fPIC -O2 -fwhole-program -c -o "src/stdafx.h.gch" "src/stdafx.h"
+  DEPENDS ${TQDM_PCH}
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+  VERBATIM
+)
+
+endif()
+
 ## target_link_libraries(tqdm)
 
 if(UNIX)
 
-add_custom_command(
-  TARGET tqdm
-  COMMAND objcopy --only-keep-debug tqdm tqdm.debug
-  COMMAND strip -g tqdm
-  COMMAND objcopy --add-gnu-debuglink=tqdm.debug tqdm
-  COMMENT "Separating debug symbols"
-  VERBATIM
-)
-if(CFMT)
-add_custom_command(
-  TARGET tqdm
-  PRE_BUILD
-  COMMAND clang-format -i -style=file ${TQDM_BIN_FILES}
-  COMMENT "Linting"
-  USES_TERMINAL
-)
-endif(CFMT)
+macro(STRIP_FMT TARG STRIP_FMT_TARG STRIP_FMT_DEPS)
+  if(CMAKE_COMPILER_IS_GNUCXX)
+    add_dependencies(${TARG} pch)
+    # add_dependencies(${TARG} "${TQDM_SRC_DIR}/stdafx.h.gch")
+  endif()
+  add_custom_command(
+    TARGET ${TARG}
+    COMMAND objcopy --only-keep-debug ${STRIP_FMT_TARG} ${STRIP_FMT_TARG}.debug
+    COMMAND strip -g ${STRIP_FMT_TARG}
+    COMMAND objcopy --add-gnu-debuglink=${STRIP_FMT_TARG}.debug ${STRIP_FMT_TARG}
+    VERBATIM
+    COMMENT "Separating debug symbols"
+  )
+  if(CFMT)
+  add_custom_command(
+    TARGET ${TARG}
+    PRE_BUILD
+    COMMAND clang-format "-i" "-style=file" ${STRIP_FMT_DEPS}
+    COMMENT "Linting ${STRIP_FMT_DEPS}"
+    # USES_TERMINAL
+  )
+  endif(CFMT)
+endmacro(STRIP_FMT)
 
-add_custom_command(
-  TARGET test_tqdm
-  POST_BUILD
-  COMMAND objcopy --only-keep-debug test_tqdm test_tqdm.debug
-  COMMAND strip -g test_tqdm
-  COMMAND objcopy --add-gnu-debuglink=test_tqdm.debug test_tqdm
-  COMMENT "Separating debug symbols"
-  VERBATIM
-)
-if(CFMT)
-add_custom_command(
-  TARGET test_tqdm
-  PRE_BUILD
-  COMMAND clang-format -i -style=file ${TQDM_TEST_FILES}
-  COMMENT "Linting"
-  USES_TERMINAL
-)
-endif(CFMT)
-
-# don't need to strip symbols from lib
-if(CFMT)
-add_custom_command(
-  TARGET tqdmlib
-  PRE_BUILD
-  COMMAND clang-format -i -style=file ${TQDM_LIB_FILES}
-  COMMENT "Linting"
-  USES_TERMINAL
-)
-endif(CFMT)
+STRIP_FMT(     tqdm "$<TARGET_FILE:tqdm>"      "${TQDM_BIN_FILES}")
+STRIP_FMT(test_tqdm "$<TARGET_FILE:test_tqdm>" "${TQDM_TEST_FILES}")
+STRIP_FMT(tqdmlib   "$<TARGET_FILE:tqdmlib>"   "${TQDM_LIB_FILES}")
 
 endif(UNIX)
 
@@ -156,7 +151,7 @@ add_custom_command(
   TARGET test_tqdm
   POST_BUILD
   COMMAND test_tqdm
-  COMMENT "Testing"
   VERBATIM
   USES_TERMINAL
+  COMMENT "Testing"
 )

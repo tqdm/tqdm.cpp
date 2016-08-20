@@ -9,3 +9,8 @@
 #include <string>       // string
 #include <type_traits>  // is_pointer, ...
 #include <utility>      // swap
+#include <unistd.h>     // STDERR_FILENO
+#include <atomic>       // atomic
+#include <cstring>      //strlen
+#include <cerrno>       // EAGAIN
+#include <poll.h>       // poll

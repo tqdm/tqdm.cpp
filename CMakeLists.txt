@@ -46,7 +46,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # applications.
 set(TQDM_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(TQDM_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-file(GLOB TQDM_PCH "${TQDM_SRC_DIR}/*.h")
+file(GLOB TQDM_PCH "${TQDM_SRC_DIR}/*.h" "${TQDM_INCLUDE_DIR}/tqdm/*.h")
 set(TQDM_BIN_FILES
   "${TQDM_SRC_DIR}/main.cpp"
   # ${TQDM_PCH}
@@ -56,10 +56,11 @@ file(GLOB TQDM_TEST_FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/test/*.h"
   # ${TQDM_PCH}
 )
-set(TQDM_LIB_FILES
-  "${TQDM_SRC_DIR}/utils.cpp"
-  "${TQDM_SRC_DIR}/tqdm.cpp"
+file(GLOB TQDM_LIB_FILES
+  # "${TQDM_SRC_DIR}/utils.cpp"
+  # "${TQDM_SRC_DIR}/tqdm.cpp"
   # ${TQDM_PCH}
+  "${TQDM_SRC_DIR}/*.cpp"
 )
 # file(GLOB TQDM_PUBLIC_HEADERS "${TQDM_INCLUDE_DIR}/tqdm/*.h")
 
@@ -105,9 +106,17 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 
 add_custom_target(
   pch
-  ${CMAKE_CXX_COMPILER} -g -Werror -Wall -Wextra -Wunused -Wformat=2 -std=c++11 -fPIC -O2 -fwhole-program -c -o "src/stdafx.h.gch" "src/stdafx.h"
+  ${CMAKE_CXX_COMPILER} -I "${TQDM_INCLUDE_DIR}" -g -Werror -Wall -Wextra -Wunused -Wformat=2 -std=c++11 -fPIC -O2 -fwhole-program -c -o "src/stdafx.h.gch" "src/stdafx.h"
   DEPENDS ${TQDM_PCH}
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+  VERBATIM
+)
+
+add_custom_target(
+  cfmt
+  clang-format "-i" "-style=file" ${TQDM_LIB_FILES} ${TQDM_TEST_FILES} ${TQDM_PCH}
+  COMMENT "Linting ${TQDM_LIB_FILES} ${TQDM_TEST_FILES} ${TQDM_PCH}"
+  DEPENDS ${TQDM_LIB_FILES} ${TQDM_TEST_FILES} ${TQDM_PCH}
   VERBATIM
 )
 
@@ -120,8 +129,10 @@ if(UNIX)
 macro(STRIP_FMT TARG STRIP_FMT_TARG STRIP_FMT_DEPS)
   if(CMAKE_COMPILER_IS_GNUCXX)
     add_dependencies(${TARG} pch)
-    # add_dependencies(${TARG} "${TQDM_SRC_DIR}/stdafx.h.gch")
   endif()
+  if(CFMT)
+    add_dependencies(${TARG} cfmt)
+  endif(CFMT)
   add_custom_command(
     TARGET ${TARG}
     COMMAND objcopy --only-keep-debug ${STRIP_FMT_TARG} ${STRIP_FMT_TARG}.debug
@@ -130,15 +141,6 @@ macro(STRIP_FMT TARG STRIP_FMT_TARG STRIP_FMT_DEPS)
     VERBATIM
     COMMENT "Separating debug symbols"
   )
-  if(CFMT)
-  add_custom_command(
-    TARGET ${TARG}
-    PRE_BUILD
-    COMMAND clang-format "-i" "-style=file" ${STRIP_FMT_DEPS}
-    COMMENT "Linting ${STRIP_FMT_DEPS}"
-    # USES_TERMINAL
-  )
-  endif(CFMT)
 endmacro(STRIP_FMT)
 
 STRIP_FMT(     tqdm "$<TARGET_FILE:tqdm>"      "${TQDM_BIN_FILES}")

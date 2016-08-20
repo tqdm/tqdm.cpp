@@ -310,7 +310,9 @@ struct SinkOptions {
 
   int tty_width;
   int tty_height;
+
   // Additional options will be added in future.
+  SinkOptions(int fd) : fd(fd){};
 };
 
 class Sink;
@@ -330,7 +332,7 @@ public:
   Sink &operator=(Sink &&) = delete;
 };
 
-Sink standard_sink((SinkOptions){fd : STDERR_FILENO});
+Sink standard_sink(SinkOptions(STDERR_FILENO));
 
 // static void wait_for_write(int fd);
 

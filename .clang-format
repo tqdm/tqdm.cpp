@@ -1,0 +1,26 @@
+---
+Language:        Cpp
+BasedOnStyle:  LLVM
+ColumnLimit:     78
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+ExperimentalAutoDetectBinPacking: false
+IndentWrappedFunctionNames: false
+IndentFunctionDeclarationAfterType: false
+MaxEmptyLinesToKeep: 1
+KeepEmptyLinesAtTheStartOfBlocks: true
+PenaltyBreakBeforeFirstCallParameter: 19
+PenaltyBreakComment: 300
+PenaltyBreakString: 1000
+PenaltyBreakFirstLessLess: 120
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 60
+SpacesBeforeTrailingComments: 2
+Standard:        Cpp11
+SpacesInContainerLiterals: true
+SpaceBeforeAssignmentOperators: true
+ContinuationIndentWidth: 4
+CommentPragmas:  '^ IWYU pragma:'
+ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
+# SortIncludes: false  # uncomment this for clang-format>=3.8
+...
+

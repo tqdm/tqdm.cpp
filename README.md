@@ -5,15 +5,15 @@ tqdm
 
 **Official** C++ port of the popular python module, [tqdm](https://github/tqdm/tqdm). Work in progress (pre-alpha)
 
-![][Build-Status] ![][Coverage-Status]
+[![][Build-Status]][Build-Status-lnk] [![][Coverage-Status]][Coverage-Status-lnk]
 
 <!--
-![][Build-Status] ![][Coverage-Status] ![][Branch-Coverage-Status]
+[Build-Status] [Coverage-Status] [Branch-Coverage-Status]
 
-![][DOI-URI]
+[DOI-URI]
 -->
 
-![][Licence]
+[![][Licence]][Licence-lnk]
 
 `tqdm` (read taqadum, تقدّم) means "progress" in arabic.
 
@@ -79,17 +79,23 @@ file for more information.
 Licence
 -------
 
-Open Source (OSI approved): ![][Licence]
+Open Source (OSI approved): [![][Licence]][Licence-lnk]
 
 
 ![][Readme-Hits] (Since 9 August 2016)
 
   [Logo]: https://raw.githubusercontent.com/tqdm/tqdm/master/logo.png
   [Screenshot]: https://raw.githubusercontent.com/tqdm/tqdm/master/images/tqdm.gif
-  [Github-Status]: https://img.shields.io/github/tag/tqdm/tqdm.cpp.svg?maxAge=2592000 "https://github.com/tqdm/tqdm.cpp/releases"
-  [Github-Forks]: https://img.shields.io/github/forks/tqdm/tqdm.cpp.svg "https://github.com/tqdm/tqdm.cpp/network"
-  [Github-Stars]: https://img.shields.io/github/stars/tqdm/tqdm.cpp.svg "https://github.com/tqdm/tqdm.cpp/stargazers"
-  [Licence]: https://img.shields.io/pypi/l/tqdm.svg "https://raw.githubusercontent.com/tqdm/tqdm.cpp/master/LICENCE"
+  [Github-Status]: https://img.shields.io/github/tag/tqdm/tqdm.cpp.svg?maxAge=2592000
+  [Github-Status-lnk]: https://github.com/tqdm/tqdm.cpp/releases
+  [Github-Forks]: https://img.shields.io/github/forks/tqdm/tqdm.cpp.svg
+  [Github-Forks-lnk]: https://github.com/tqdm/tqdm.cpp/network
+  [Github-Stars]: https://img.shields.io/github/stars/tqdm/tqdm.cpp.svg
+  [Github-Stars-lnk]: https://github.com/tqdm/tqdm.cpp/stargazers
+  [Licence]: https://img.shields.io/pypi/l/tqdm.svg
+  [Licence-lnk]: https://raw.githubusercontent.com/tqdm/tqdm.cpp/master/LICENCE
   [Readme-Hits]: http://hitt.herokuapp.com/tqdm/tqdm_cpp.svg
-  [Coverage-Status]: https://coveralls.io/repos/github/tqdm/tqdm.cpp/badge.svg?branch=master "https://coveralls.io/github/tqdm/tqdm.cpp?branch=master"
-  [Build-Status]: https://travis-ci.org/tqdm/tqdm.svg?branch=master "https://travis-ci.org/tqdm/tqdm"
+  [Coverage-Status]: https://coveralls.io/repos/github/tqdm/tqdm.cpp/badge.svg?branch=master
+  [Coverage-Status-lnk]: https://coveralls.io/github/tqdm/tqdm.cpp?branch=master
+  [Build-Status]: https://travis-ci.org/tqdm/tqdm.cpp.svg?branch=master
+  [Build-Status-lnk]: https://travis-ci.org/tqdm/tqdm.cpp

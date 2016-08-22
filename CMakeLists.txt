@@ -10,6 +10,9 @@ cmake_policy(SET CMP0020 NEW)
 if(POLICY CMP0043)
 cmake_policy(SET CMP0043 OLD)
 endif(POLICY CMP0043)
+if(POLICY CMP0054)
+cmake_policy(SET CMP0054 NEW)
+endif(POLICY CMP0054)
 
 if(MSVC)
 set(STANDARD_COMPILE_OPTS /WX /D_SCL_SECURE_NO_WARNINGS)
@@ -149,6 +152,7 @@ STRIP_FMT(tqdmlib   "$<TARGET_FILE:tqdmlib>"   "${TQDM_LIB_FILES}")
 
 endif(UNIX)
 
+if(NOT MSVC)
 add_custom_command(
   TARGET test_tqdm
   POST_BUILD
@@ -157,3 +161,4 @@ add_custom_command(
   USES_TERMINAL
   COMMENT "Testing"
 )
+endif(MSVC)

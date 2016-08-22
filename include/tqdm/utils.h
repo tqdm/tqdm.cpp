@@ -15,13 +15,34 @@
 
 #include <cassert>      // assert
 #include <cstddef>      // ptrdiff_t, size_t
-#include <unistd.h>     // STDERR_FILENO
 #include <iterator>     // iterator
 #include <type_traits>  // is_pointer, ...
 #include <atomic>       // atomic
 #include <cstring>      // strlen
 #include <cerrno>       // EAGAIN
-#include <poll.h>       // poll
+
+#ifdef IS_WIN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef STDIN_FILENO
+#define STDIN_FILENO 0
+#endif
+#ifndef STDOUT_FILENO
+#define STDOUT_FILENO 1
+#endif
+#ifndef STDERR_FILENO
+#define STDERR_FILENO 2
+#endif
+// #ifndef ssize_t
+//   typedef std::make_unsigned<size_t>::type ssize_t;
+// #endif
+#include <io.h>        // write
+#include <WinSock2.h>  // select
+#else
+#include <unistd.h>  // STDERR_FILENO
+#include <poll.h>    // poll
+#endif               // _WIN32
 
 /** TODO: port from python
  * colorama win
@@ -176,7 +197,7 @@ public:
     return tmp;
   }
   explicit operator bool() const { return current < total; }
-  size_t size_remaining() const { return (total - current) / step; }
+  IntType size_remaining() const { return (total - current) / step; }
 
   /** here be dragons */
 
@@ -201,18 +222,33 @@ const char *_term_move_up() {
 }
 
 static void wait_for_write(int fd) {
+#ifdef IS_WIN
+  struct fd_set fds;
+  FD_ZERO(&fds);
+  FD_SET(fd, &fds);
+  select(1, NULL, &fds, NULL, NULL);
+#else
   struct pollfd pfd;
   pfd.fd = fd;
   pfd.events = POLLOUT;
-  (void)::poll(&pfd, 1, -1);
+  (void)::poll(&pfd, 1, 1);
+#endif
 }
 
 // Write a buffer fully or not at all.
 // If false is returned, caller may check errno to see if it's EAGAIN
 // or a real error.
 bool write_harder(int fd, const char *buf, size_t len) {
+#ifdef IS_WIN
+  while (len) {
+    int res = _write(fd, buf, (unsigned int)len);
+    if (res == -1)
+      return false;
+    assert(res != 0);
+    len -= res;
+  }
+#else
   bool did_anything = false;
-
   while (len) {
     ssize_t res = ::write(fd, buf, len);
     if (res == -1) {
@@ -230,6 +266,7 @@ bool write_harder(int fd, const char *buf, size_t len) {
     buf += res;
     len -= res;
   }
+#endif  // IS_WIN
   return true;
 }
 

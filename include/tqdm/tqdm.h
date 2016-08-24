@@ -71,26 +71,29 @@ private:
   Params self;  // ha, ha
 
 public:
+  typedef typename std::iterator_traits<_Iterator>::difference_type
+      difference_type;
+
   /**
    containter-like methods
    */
   // actually current value
-  // virtual _Iterator begin() { return this->get(); }
+  // virtual _Iterator begin() { return this->base(); }
   Tqdm &begin() { return *this; }
   const Tqdm &begin() const { return *this; }
   // virtual _Iterator end() { return e; }
   Tqdm end() const { return Tqdm(e, e); }
 
-  explicit operator _Iterator() { return this->get(); }
+  explicit operator _Iterator() { return this->base(); }
 
   /** constructors
    */
   explicit Tqdm(_Iterator begin, _Iterator end)
       : TQDM_IT(begin), e(end), self() {
-    self.total = size_t(end - begin);
+    self.total = difference_type(end - begin);
   }
 
-  explicit Tqdm(_Iterator begin, size_t total)
+  explicit Tqdm(_Iterator begin, difference_type total)
       : TQDM_IT(begin), e(begin + total), self() {
     self.total = total;
   }
@@ -106,25 +109,25 @@ public:
   template <typename _Container,
             typename = typename std::enable_if<
                 !std::is_same<_Container, Tqdm>::value>::type>
-  Tqdm(_Container &v) : TQDM_IT(std::begin(v)), e(std::end(v)), self() {
-    self.total = e - this->get();
+  Tqdm(_Container &v)
+      : TQDM_IT(std::begin(v)), e(std::end(v)), self() {
+    self.total = e - this->base();
   }
 
-  explicit operator bool() const { return this->get() != e; }
+  explicit operator bool() const { return this->base() != e; }
 
   /** TODO: magic methods */
-  virtual void _incr() const override {
-    if (this->get() == e)
+  virtual void _incr() override {
+    if (this->base() == e)
       throw std::out_of_range(
           "exhausted");  // TODO: don't throw, just double total
 
     TQDM_IT::_incr();
-    if (this->get() == e) {
+    if (this->base() == e) {
       printf("\nfinished: %" PRIu64 "/%" PRIu64 "\n", self.total, self.total);
     } else
-      printf("\r%" PRIi64 " left", (int64_t)(e - this->get()));
+      printf("\r%" PRIi64 " left", (int64_t)(e - this->base()));
   }
-  virtual void _incr() override { ((Tqdm const &)*this)._incr(); }
 };
 
 template <typename _Iterator, typename _Tqdm = Tqdm<_Iterator>>

@@ -161,4 +161,4 @@ add_custom_command(
   USES_TERMINAL
   COMMENT "Testing"
 )
-endif(MSVC)
+endif(NOT MSVC)

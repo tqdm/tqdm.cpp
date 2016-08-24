@@ -77,32 +77,29 @@ class MyIteratorWrapper
     : public std::iterator<
           std::forward_iterator_tag,
           typename std::iterator_traits<_Iterator>::value_type> {
-  mutable _Iterator p;  // TODO: remove this mutable
+  _Iterator p;
 
 public:
   // already done by std::iterator
   typedef typename std::iterator_traits<_Iterator>::value_type value_type;
+  typedef typename std::iterator_traits<_Iterator>::reference reference;
+  typedef typename std::iterator_traits<_Iterator>::difference_type
+      difference_type;
+  typedef typename std::iterator_traits<_Iterator>::pointer pointer;
 
-  explicit MyIteratorWrapper(_Iterator x) : p(x) {}
-  // default construct gives end
-  MyIteratorWrapper() : p(nullptr) {}
+  // default constructor gives end
+  explicit MyIteratorWrapper(_Iterator x = nullptr) : p(x) {}
   explicit MyIteratorWrapper(const MyIteratorWrapper &mit) : p(mit.p) {}
 
   // override this in Tqdm class
   virtual void _incr() { ++p; }
-  // override this in Tqdm class
-  virtual void _incr() const { ++p; }
 
   MyIteratorWrapper &operator++() {
     // assert(this->bool() && "Out-of-bounds iterator increment");
     _incr();
     return *this;
   }
-  const MyIteratorWrapper &operator++() const {
-    _incr();
-    return *this;
-  }
-  MyIteratorWrapper operator++(int)const {
+  MyIteratorWrapper operator++(int) {
     MyIteratorWrapper tmp(*this);
     _incr();
     return tmp;
@@ -114,37 +111,25 @@ public:
   }
   template <class Other>
   bool operator!=(const MyIteratorWrapper<Other> &rhs) const {
-    return p != rhs.p;
+    return !(*this == rhs);
   }
   template <class Other>
-  size_t operator-(const MyIteratorWrapper<Other> &rhs) {
+  difference_type operator-(const MyIteratorWrapper<Other> &rhs) const {
     return p - rhs.p;
   }
-  // template <typename = typename std::enable_if<
-  //               !std::is_const<value_type>::value>::type>
-  value_type &operator*() {
-    // assert(this->bool() && "Invalid iterator dereference!");
-    return *p;
-  }
-  const value_type &operator*() const {
+  reference operator*() const {
     // assert(this->bool() && "Invalid iterator dereference!");
     return *p;
   }
   // template <typename = typename std::enable_if<
   //               !std::is_const<value_type>::value>::type>
-  value_type &operator->() {
-    // assert(this->bool() && "Invalid iterator dereference!");
-    return *p;
-  }
-  const value_type &operator->() const {
+  pointer operator->() const {
     // assert(this->bool() && "Invalid iterator dereference!");
     return *p;
   }
   // @return the underlying iterator
-  _Iterator &get() { return p; }
-  const _Iterator &get() const { return p; }
-  // TODO: const _Iterator &get() const { return p; }, etc ...
-  //
+  _Iterator &base() { return p; }
+  const _Iterator &base() const { return p; }
   void swap(MyIteratorWrapper &other) noexcept { std::swap(p, other.p); }
 
   // One way conversion: iterator -> const_iterator
@@ -169,42 +154,46 @@ _MyIteratorWrapper myIteratorWrapper(_Iterator x) {
 
 template <typename IntType = int>
 class RangeIterator
-    : public std::iterator<std::forward_iterator_tag, IntType> {
+    : public std::iterator<std::forward_iterator_tag,
+                           typename std::add_const<IntType>::type> {
+public:
+  typedef typename std::remove_cv<IntType>::type noconst_value_type;
+  typedef typename std::add_const<IntType>::type value_type;
+  typedef value_type &reference;
+  typedef value_type *pointer;
+  typedef noconst_value_type difference_type;
+
 private:
-  mutable IntType current;
-  IntType total;
-  IntType step;
+  noconst_value_type current;
+  value_type total;
+  value_type step;
 
 public:
-  RangeIterator(IntType total) : current(0), total(total), step(1) {}
-  RangeIterator(IntType start, IntType total)
+  RangeIterator(value_type total) : current(0), total(total), step(1) {}
+  RangeIterator(value_type start, value_type total)
       : current(start), total(total), step(1) {}
-  RangeIterator(IntType start, IntType total, IntType step)
+  RangeIterator(value_type start, value_type total, value_type step)
       : current(start), total(total), step(step) {}
-  IntType &operator*() { return current; }
-  const IntType &operator*() const { return current; }
+  reference operator*() const { return current; }
+  pointer operator->() const { return &current; }
   RangeIterator &operator++() {
     current += step;
     return *this;
   }
-  const RangeIterator &operator++() const {
-    current += step;
-    return *this;
-  }
-  RangeIterator operator++(int)const {
+  RangeIterator operator++(int) {
     RangeIterator tmp(*this);
     operator++();
     return tmp;
   }
   explicit operator bool() const { return current < total; }
-  IntType size_remaining() const { return (total - current) / step; }
+  difference_type size_remaining() const { return (total - current) / step; }
 
   /** here be dragons */
 
   // only use as (it != end), not as (end != it)
   bool operator!=(const RangeIterator &) const { return current < total; }
   bool operator==(const RangeIterator &) const { return current >= total; }
-  IntType operator-(const RangeIterator &it) const {
+  noconst_value_type operator-(const RangeIterator &it) const {
     // it's used in `end - begin`, but `end` is only a sentinel
     // so let's use `begin `to be consistent
     return it.size_remaining();

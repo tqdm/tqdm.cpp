@@ -36,11 +36,6 @@ Usage:
 #include <utility>      // swap
 #include "tqdm/utils.h"
 
-#ifndef SIZE_T_MAX
-#include <limits>
-constexpr size_t SIZE_T_MAX = std::numeric_limits<size_t>::max();
-#endif
-
 namespace tqdm {
 
 struct Params {
@@ -109,8 +104,7 @@ public:
   template <typename _Container,
             typename = typename std::enable_if<
                 !std::is_same<_Container, Tqdm>::value>::type>
-  Tqdm(_Container &v)
-      : TQDM_IT(std::begin(v)), e(std::end(v)), self() {
+  Tqdm(_Container &v) : TQDM_IT(std::begin(v)), e(std::end(v)), self() {
     self.total = e - this->base();
   }
 

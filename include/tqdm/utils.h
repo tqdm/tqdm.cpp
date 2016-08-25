@@ -13,13 +13,13 @@
 
 #endif  // CUR_OS
 
+#include <atomic>       // atomic
 #include <cassert>      // assert
+#include <cerrno>       // EAGAIN
 #include <cstddef>      // ptrdiff_t, size_t
+#include <cstring>      // strlen
 #include <iterator>     // iterator
 #include <type_traits>  // is_pointer, ...
-#include <atomic>       // atomic
-#include <cstring>      // strlen
-#include <cerrno>       // EAGAIN
 
 #ifdef IS_WIN
 #ifndef NOMINMAX
@@ -34,15 +34,12 @@
 #ifndef STDERR_FILENO
 #define STDERR_FILENO 2
 #endif
-// #ifndef ssize_t
-//   typedef std::make_unsigned<size_t>::type ssize_t;
-// #endif
-#include <io.h>        // write
 #include <WinSock2.h>  // select
-#else
-#include <unistd.h>  // STDERR_FILENO
-#include <poll.h>    // poll
-#endif               // _WIN32
+#include <io.h>        // write
+#else                  // _WIN32
+#include <poll.h>      // poll
+#include <unistd.h>    // STDERR_FILENO
+#endif                 // _WIN32
 
 /** TODO: port from python
  * colorama win

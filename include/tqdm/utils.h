@@ -65,102 +65,123 @@
 
 namespace tqdm {
 
+template <typename T>
+/**
+Converts anything to a c-string.
+* TODO: could this cause a memory leak?
+@author Casper da Costa-Luis
+*/
+static inline const char *_s(const T &obj) {
+  return std::to_string(obj).c_str();
+}
+
 template <typename _Iterator>
 /**
 Wrapper for pointers and std containter iterators.
 @author Casper da Costa-Luis
 */
-class MyIteratorWrapper
+class IteratorWrapper
     : public std::iterator<
           std::forward_iterator_tag,
           typename std::iterator_traits<_Iterator>::value_type> {
+protected:
   _Iterator p;
 
+  typedef std::iterator_traits<_Iterator> traits;
+
 public:
-  // already done by std::iterator
-  typedef typename std::iterator_traits<_Iterator>::value_type value_type;
-  typedef typename std::iterator_traits<_Iterator>::reference reference;
-  typedef typename std::iterator_traits<_Iterator>::difference_type
-      difference_type;
-  typedef typename std::iterator_traits<_Iterator>::pointer pointer;
+  typedef _Iterator iterator_type;
+  typedef typename traits::difference_type difference_type;
+  typedef typename traits::value_type value_type;
+  typedef typename traits::pointer pointer;
+  typedef typename traits::reference reference;
+  typedef typename traits::iterator_category iterator_category;
 
   // default constructor gives end
-  explicit MyIteratorWrapper(_Iterator x = nullptr) : p(x) {}
-  explicit MyIteratorWrapper(const MyIteratorWrapper &mit) : p(mit.p) {}
+  IteratorWrapper() : p() {}
+  explicit IteratorWrapper(iterator_type x) : p(x) {}
+  explicit IteratorWrapper(const IteratorWrapper &mit) : p(mit.p) {}
 
   // override this in Tqdm class
-  virtual void _incr() { ++p; }
+  virtual inline void _incr() { ++p; }
 
-  MyIteratorWrapper &operator++() {
+  IteratorWrapper &operator++() {
     // assert(this->bool() && "Out-of-bounds iterator increment");
     _incr();
     return *this;
   }
-  MyIteratorWrapper operator++(int) {
-    MyIteratorWrapper tmp(*this);
+  IteratorWrapper operator++(int) {
+    IteratorWrapper tmp(*this);
     _incr();
     return tmp;
-  }
-  template <class Other>
-  // two-way comparison: v.begin() == v.cbegin() and vice versa
-  bool operator==(const MyIteratorWrapper<Other> &rhs) const {
-    return p == rhs.p;
-  }
-  template <class Other>
-  bool operator!=(const MyIteratorWrapper<Other> &rhs) const {
-    return !(*this == rhs);
-  }
-  template <class Other>
-  difference_type operator-(const MyIteratorWrapper<Other> &rhs) const {
-    return p - rhs.p;
   }
   reference operator*() const {
     // assert(this->bool() && "Invalid iterator dereference!");
     return *p;
   }
-  // template <typename = typename std::enable_if<
-  //               !std::is_const<value_type>::value>::type>
   pointer operator->() const {
     // assert(this->bool() && "Invalid iterator dereference!");
-    return *p;
+    return &(operator*());
   }
   // @return the underlying iterator
-  _Iterator &base() { return p; }
-  const _Iterator &base() const { return p; }
-  void swap(MyIteratorWrapper &other) noexcept { std::swap(p, other.p); }
+  iterator_type &base() { return p; }
+  const iterator_type &base() const { return p; }
+  void swap(IteratorWrapper &other) noexcept { std::swap(p, other.p); }
 
+  template <class Other>
+  // two-way comparison: v.begin() == v.cbegin() and vice versa
+  inline bool operator==(const IteratorWrapper<Other> &rhs) const {
+    return p == rhs.p;
+  }
+  template <class Other>
+  inline bool operator!=(const IteratorWrapper<Other> &rhs) const {
+    return !(*this == rhs);
+  }
+  template <class Other>
+  inline difference_type operator-(const IteratorWrapper<Other> &rhs) const {
+    return p - rhs.p;
+  }
   // One way conversion: iterator -> const_iterator
   // template <typename =
   //               typename
   //               std::enable_if<!std::is_const<_Iterator>::value>::type>
-  // operator MyIteratorWrapper<typename std::add_const<_Iterator>::type>()
+  // operator IteratorWrapper<typename std::add_const<_Iterator>::type>()
   // const {
-  //   return MyIteratorWrapper<const _Iterator>(p);
+  //   return IteratorWrapper<const _Iterator>(p);
   // }
-  template <typename = typename std::is_pointer<_Iterator>>
-  explicit operator bool() const {
+  template <typename = typename std::is_pointer<iterator_type>>
+  inline operator bool() const {
     return p != nullptr;
   }
+  explicit operator iterator_type() { return this->base(); }
 };
 
 template <typename _Iterator,
-          typename _MyIteratorWrapper = MyIteratorWrapper<_Iterator>>
-_MyIteratorWrapper myIteratorWrapper(_Iterator x) {
-  return _MyIteratorWrapper(x);
+          typename _IteratorWrapper = IteratorWrapper<_Iterator>>
+// helper function, unused so far
+_IteratorWrapper iteratorWrapper(_Iterator x) {
+  return _IteratorWrapper(x);
 }
 
 template <typename IntType = int>
 class RangeIterator
     : public std::iterator<std::forward_iterator_tag,
                            typename std::add_const<IntType>::type> {
-public:
+protected:
+  typedef std::iterator_traits<typename std::add_const<IntType>::type *>
+      traits;
   typedef typename std::remove_cv<IntType>::type noconst_value_type;
-  typedef typename std::add_const<IntType>::type value_type;
-  typedef value_type &reference;
-  typedef value_type *pointer;
-  typedef noconst_value_type difference_type;
 
-private:
+public:
+  typedef typename traits::pointer iterator_type;
+  // typedef typename traits::difference_type difference_type;
+  typedef noconst_value_type difference_type;
+  typedef typename traits::value_type value_type;
+  typedef typename traits::pointer pointer;
+  typedef typename traits::reference reference;
+  typedef typename traits::iterator_category iterator_category;
+
+protected:
   noconst_value_type current;
   value_type total;
   value_type step;
@@ -172,7 +193,7 @@ public:
   RangeIterator(value_type start, value_type total, value_type step)
       : current(start), total(total), step(step) {}
   reference operator*() const { return current; }
-  pointer operator->() const { return &current; }
+  pointer operator->() const { return &(operator*()); }
   RangeIterator &operator++() {
     current += step;
     return *this;
@@ -182,15 +203,22 @@ public:
     operator++();
     return tmp;
   }
-  explicit operator bool() const { return current < total; }
-  difference_type size_remaining() const { return (total - current) / step; }
+  explicit inline operator bool() const { return current < total; }
+  // explicit operator pointer() const { return &current; }
+  inline difference_type size_remaining() const {
+    return (total - current) / step;
+  }
 
   /** here be dragons */
 
   // only use as (it != end), not as (end != it)
-  bool operator!=(const RangeIterator &) const { return current < total; }
-  bool operator==(const RangeIterator &) const { return current >= total; }
-  noconst_value_type operator-(const RangeIterator &it) const {
+  inline bool operator!=(const RangeIterator &) const {
+    return current < total;
+  }
+  inline bool operator==(const RangeIterator &) const {
+    return current >= total;
+  }
+  inline noconst_value_type operator-(const RangeIterator &it) const {
     // it's used in `end - begin`, but `end` is only a sentinel
     // so let's use `begin `to be consistent
     return it.size_remaining();

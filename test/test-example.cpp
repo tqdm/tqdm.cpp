@@ -10,19 +10,17 @@ int main() {
   int a[N];
   for (unsigned i = 0; i < N; ++i)
     a[i] = i;
-  // TODO: fix this:
-  // for (auto i = tqdm::tqdm(a, a + N); i; ++i)
-  for (auto i = tqdm::tqdm(a, a + N); i != i.end(); ++i)
+  for (auto i = tqdm::tqdm(a, a + N); !i.ended(); ++i)
     ;
 
   printf("iterator, total\n");
   std::vector<int> b(N);
   std::memcpy(b.data(), a, sizeof(int) * N);
-  for (auto i = tqdm::tqdm(b.begin(), N); i; ++i)
+  for (auto i = tqdm::tqdm(b.begin(), N); !i.ended(); ++i)
     ;
 
   printf("container, post-increment\n");
-  for (auto i = tqdm::tqdm(b); i; i++)
+  for (auto i = tqdm::tqdm(b); !i.ended(); i++)
     ;
 
   printf("range-based container\n");
@@ -38,7 +36,7 @@ int main() {
       printf(" \b");
 
   printf("iterator-based pythonic range()\n");
-  for (auto it = tqdm::range(N); it; ++it)
+  for (auto it = tqdm::range(N); !it.ended(); ++it)
     ;
 
   printf("ye moste pythonic range(), auto type inference\n");

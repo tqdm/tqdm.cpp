@@ -58,48 +58,42 @@ struct Params {
   bool gui = false;
 };
 
-template <typename _Iterator>
-class Tqdm : public MyIteratorWrapper<_Iterator> {
-private:
-  using TQDM_IT = MyIteratorWrapper<_Iterator>;
+template <typename _Iterator> class Tqdm : public IteratorWrapper<_Iterator> {
+protected:
   _Iterator e;  // end
   Params self;  // ha, ha
 
-public:
-  typedef typename std::iterator_traits<_Iterator>::difference_type
-      difference_type;
+  using TQDM_IT = IteratorWrapper<_Iterator>;
+  typedef std::iterator_traits<_Iterator> traits;
 
-  /**
-   containter-like methods
-   */
+public:
+  typedef _Iterator iterator_type;
+  typedef typename traits::difference_type difference_type;
+  // not used here, but included for compatibility
+  typedef typename traits::value_type value_type;
+  typedef typename traits::pointer pointer;
+  typedef typename traits::reference reference;
+  typedef typename traits::iterator_category iterator_category;
+
+  /** containter-like methods */
   // actually current value
-  // virtual _Iterator begin() { return this->base(); }
   Tqdm &begin() { return *this; }
   const Tqdm &begin() const { return *this; }
-  // virtual _Iterator end() { return e; }
   Tqdm end() const { return Tqdm(e, e); }
 
-  explicit operator _Iterator() { return this->base(); }
-
-  /** constructors
-   */
-  explicit Tqdm(_Iterator begin, _Iterator end)
+  /** constructors */
+  explicit Tqdm(iterator_type begin, iterator_type end)
       : TQDM_IT(begin), e(end), self() {
     self.total = difference_type(end - begin);
   }
 
-  explicit Tqdm(_Iterator begin, difference_type total)
+  explicit Tqdm(iterator_type begin, difference_type total)
       : TQDM_IT(begin), e(begin + total), self() {
     self.total = total;
   }
 
-  // Tqdm(const Tqdm& other)
-  //     : TQDM_IT(other.get()),
-  //       e(other.end().get()),
-  //       self(other.self),
-  // {
-  //   // std::memcpy(this, &other, sizeof(Tqdm));
-  // }
+  explicit Tqdm(const Tqdm &other)
+      : TQDM_IT(other.base()), e(other.end().base()), self(other.self) {}
 
   template <typename _Container,
             typename = typename std::enable_if<
@@ -108,19 +102,22 @@ public:
     self.total = e - this->base();
   }
 
-  explicit operator bool() const { return this->base() != e; }
+  // this is scary, non-standard
+  // explicit operator bool() const { return this->base() != e; }
+  inline bool ended() const { return this->base() == e; }
+  inline difference_type size_remaining() const { return e - this->base(); }
 
   /** TODO: magic methods */
-  virtual void _incr() override {
-    if (this->base() == e)
+  virtual inline void _incr() override {
+    if (ended())
       throw std::out_of_range(
           "exhausted");  // TODO: don't throw, just double total
 
     TQDM_IT::_incr();
-    if (this->base() == e) {
-      printf("\nfinished: %" PRIu64 "/%" PRIu64 "\n", self.total, self.total);
+    if (ended()) {
+      printf("\nfinished: %s/%s\n", _s(self.total), _s(self.total));
     } else
-      printf("\r%" PRIi64 " left", (int64_t)(e - this->base()));
+      printf("\r%s left", _s(size_remaining()));
   }
 };
 

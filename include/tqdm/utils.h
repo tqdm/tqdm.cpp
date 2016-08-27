@@ -95,12 +95,20 @@ public:
   typedef typename traits::value_type value_type;
   typedef typename traits::pointer pointer;
   typedef typename traits::reference reference;
-  typedef typename traits::iterator_category iterator_category;
+  typedef std::forward_iterator_tag iterator_category;
 
   // default constructor gives end
   IteratorWrapper() : p() {}
   explicit IteratorWrapper(iterator_type x) : p(x) {}
   explicit IteratorWrapper(const IteratorWrapper &mit) : p(mit.p) {}
+  explicit IteratorWrapper &operator=(IteratorWrapper &rhs) {
+    p = rhs.p;
+    return *this;
+  }
+  explicit const IteratorWrapper &operator=(const IteratorWrapper &rhs) {
+    p = rhs.p;
+    return *this;
+  }
 
   // override this in Tqdm class
   virtual inline void _incr() { ++p; }
@@ -170,16 +178,16 @@ class RangeIterator
 protected:
   typedef std::iterator_traits<typename std::add_const<IntType>::type *>
       traits;
-  typedef typename std::remove_cv<IntType>::type noconst_value_type;
+  typedef typename std::remove_const<IntType>::type noconst_value_type;
 
 public:
   typedef typename traits::pointer iterator_type;
-  // typedef typename traits::difference_type difference_type;
-  typedef noconst_value_type difference_type;
+  typedef typename traits::difference_type difference_type;
+  // typedef noconst_value_type difference_type;
   typedef typename traits::value_type value_type;
   typedef typename traits::pointer pointer;
   typedef typename traits::reference reference;
-  typedef typename traits::iterator_category iterator_category;
+  typedef std::forward_iterator_tag iterator_category;
 
 protected:
   noconst_value_type current;

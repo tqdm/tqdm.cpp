@@ -63,17 +63,17 @@ protected:
   _Iterator e;  // end
   Params self;  // ha, ha
 
-  using TQDM_IT = IteratorWrapper<_Iterator>;
-  typedef std::iterator_traits<_Iterator> traits;
+  // typedef std::iterator_traits<_Iterator> traits;
+  typedef IteratorWrapper<_Iterator> TQDM_IT;
 
 public:
   typedef _Iterator iterator_type;
-  typedef typename traits::difference_type difference_type;
+  typedef typename TQDM_IT::difference_type difference_type;
   // not used here, but included for compatibility
-  typedef typename traits::value_type value_type;
-  typedef typename traits::pointer pointer;
-  typedef typename traits::reference reference;
-  typedef typename traits::iterator_category iterator_category;
+  typedef typename TQDM_IT::value_type value_type;
+  typedef typename TQDM_IT::pointer pointer;
+  typedef typename TQDM_IT::reference reference;
+  typedef typename TQDM_IT::iterator_category iterator_category;
 
   /** containter-like methods */
   // actually current value
@@ -94,6 +94,9 @@ public:
 
   explicit Tqdm(const Tqdm &other)
       : TQDM_IT(other.base()), e(other.end().base()), self(other.self) {}
+
+  explicit Tqdm &operator=(Tqdm &other) { this->Tqdm(other); }
+  explicit const Tqdm &operator=(const Tqdm &other) { this->Tqdm(other); }
 
   template <typename _Container,
             typename = typename std::enable_if<

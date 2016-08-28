@@ -101,22 +101,29 @@ public:
   template <typename _Container,
             typename = typename std::enable_if<
                 !std::is_same<_Container, Tqdm>::value>::type>
-  Tqdm(_Container &v) : TQDM_IT(std::begin(v)), e(std::end(v)), self() {
+  Tqdm(_Container &v)
+      : TQDM_IT(std::begin(v)), e(std::end(v)), self() {
     self.total = e - this->base();
   }
 
   // this is scary, non-standard
   // explicit operator bool() const { return this->base() != e; }
+
+  /** warning: only checks equality with end sentinel.
+  does not check > end, so update(>=2) may continue forever
+  */
   inline bool ended() const { return this->base() == e; }
   inline difference_type size_remaining() const { return e - this->base(); }
 
   /** TODO: magic methods */
-  virtual inline void _incr() override {
+  virtual inline void update(difference_type n) override {
     if (ended())
       throw std::out_of_range(
           "exhausted");  // TODO: don't throw, just double total
+    if (n < 0)
+      throw std::out_of_range("cannot have negative update");
 
-    TQDM_IT::_incr();
+    TQDM_IT::update(n);
     if (ended()) {
       printf("\nfinished: %s/%s\n", _s(self.total), _s(self.total));
     } else

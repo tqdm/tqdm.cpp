@@ -110,17 +110,21 @@ public:
     return *this;
   }
 
-  // override this in Tqdm class
-  virtual inline void _incr() { ++p; }
+  /** Override this in Tqdm class
+   end users would use operator+= instead,
+   but we keep this function for continuity with python
+   */
+  virtual inline void update(difference_type n = 1) { p += n; }
 
-  IteratorWrapper &operator++() {
+  inline IteratorWrapper &operator+=(difference_type n) {
     // assert(this->bool() && "Out-of-bounds iterator increment");
-    _incr();
+    update(n);
     return *this;
   }
+  IteratorWrapper &operator++() { return operator+=(1); }
   IteratorWrapper operator++(int) {
     IteratorWrapper tmp(*this);
-    _incr();
+    update();
     return tmp;
   }
   reference operator*() const {
@@ -144,6 +148,22 @@ public:
   template <class Other>
   inline bool operator!=(const IteratorWrapper<Other> &rhs) const {
     return !(*this == rhs);
+  }
+  template <class Other>
+  inline bool operator<(const IteratorWrapper<Other> &rhs) const {
+    return p < rhs.p;
+  }
+  template <class Other>
+  inline bool operator<=(const IteratorWrapper<Other> &rhs) const {
+    return *this < rhs || *this == rhs;
+  }
+  template <class Other>
+  inline bool operator>=(const IteratorWrapper<Other> &rhs) const {
+    return !(*this < rhs);
+  }
+  template <class Other>
+  inline bool operator>(const IteratorWrapper<Other> &rhs) const {
+    return !(*this <= rhs);
   }
   template <class Other>
   inline difference_type operator-(const IteratorWrapper<Other> &rhs) const {
@@ -202,34 +222,46 @@ public:
       : current(start), total(total), step(step) {}
   reference operator*() const { return current; }
   pointer operator->() const { return &(operator*()); }
-  RangeIterator &operator++() {
-    current += step;
+  inline RangeIterator &operator+=(difference_type n) {
+    current += step * n;
     return *this;
   }
+  RangeIterator &operator++() { return operator+=(1); }
   RangeIterator operator++(int) {
     RangeIterator tmp(*this);
     operator++();
     return tmp;
   }
-  explicit inline operator bool() const { return current < total; }
+  // explicit inline operator bool() const { return current < total; }
   // explicit operator pointer() const { return &current; }
   inline difference_type size_remaining() const {
     return (total - current) / step;
   }
 
-  /** here be dragons */
+  inline bool operator==(const RangeIterator &rhs) const {
+    return current == rhs.current;
+  }
+  inline bool operator!=(const RangeIterator &rhs) const {
+    return !(*this == rhs);
+  }
+  inline bool operator<(const RangeIterator &rhs) const {
+    return current < rhs.current;
+  }
+  inline bool operator<=(const RangeIterator &rhs) const {
+    return *this < rhs || *this == rhs;
+  }
+  inline bool operator>=(const RangeIterator &rhs) const {
+    return !(*this < rhs);
+  }
+  inline bool operator>(const RangeIterator &rhs) const {
+    return !(*this <= rhs);
+  }
 
-  // only use as (it != end), not as (end != it)
-  inline bool operator!=(const RangeIterator &) const {
-    return current < total;
-  }
-  inline bool operator==(const RangeIterator &) const {
-    return current >= total;
-  }
-  inline noconst_value_type operator-(const RangeIterator &it) const {
+  /** here be dragons */
+  inline noconst_value_type operator-(const RangeIterator &rhs) const {
     // it's used in `end - begin`, but `end` is only a sentinel
     // so let's use `begin `to be consistent
-    return it.size_remaining();
+    return rhs.size_remaining();
   }
 };
 

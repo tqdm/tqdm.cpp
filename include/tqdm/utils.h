@@ -20,6 +20,9 @@
 #include <cstring>      // strlen
 #include <iterator>     // iterator
 #include <type_traits>  // is_pointer, ...
+// #include <ctime>
+// #include <ratio>
+#include <chrono>  // time_point, steady_clock
 
 #ifdef IS_WIN
 #ifndef NOMINMAX
@@ -64,6 +67,15 @@
 #endif
 
 namespace tqdm {
+
+typedef std::chrono::steady_clock steady_clock;
+template <typename T> using duration = std::chrono::duration<T>;
+typedef steady_clock::time_point time_point;
+
+template <typename T = float>
+inline T diff(const time_point &to, const time_point &from) {
+  return std::chrono::duration_cast<duration<T>>(to - from).count();
+}
 
 template <typename T>
 /**
@@ -266,13 +278,11 @@ public:
 };
 
 const char *_term_move_up() {
-  return
 #if defined(IS_WIN) && !defined(colorama)
-      ""
+  return "";
 #else
-      "\x1b[A"
+  return "\x1b[A";
 #endif
-      ;
 }
 
 static void wait_for_write(int fd) {

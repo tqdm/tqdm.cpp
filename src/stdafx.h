@@ -12,6 +12,8 @@
 #include <string>       // string
 #include <type_traits>  // is_pointer, ...
 #include <utility>      // swap
+#include <chrono>       // time_point, steady_clock
+#include <functional>   // function
 
 #ifdef _WIN32
 #ifndef NOMINMAX

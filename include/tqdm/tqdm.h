@@ -34,18 +34,22 @@ Usage:
 #include <string>       // string
 #include <type_traits>  // is_pointer, ...
 #include <utility>      // swap
+#include <functional>   // function
+#include <sstream>      // TODO: remove
 #include "tqdm/utils.h"
 
 namespace tqdm {
 
 struct Params {
   std::string desc;
-  size_t total = -1;
+  // size_t total = -1;
   bool leave = true;
   FILE *f = stderr;
   int ncols = -1;
-  float mininterval = 0.1f, maxinterval = 10.0f;
-  unsigned miniters = -1;
+  float mininterval = 0.1f;
+  float maxinterval = 10.0f;
+  bool dynamic_miniters = false;
+  size_t miniters = 10;
   std::string ascii = " 123456789#";
   bool disable = false;
   std::string unit = "it";
@@ -58,11 +62,21 @@ struct Params {
   bool gui = false;
 };
 
+struct StatusPrinter {
+  size_t last_n = 0;
+
+  // TODO
+  void operator()(const std::string &s) {
+    printf("%s", s.c_str());
+    for (unsigned i = s.size(); i < last_n; ++i)
+      printf(" ");
+    printf("\r");
+    last_n = s.size();
+  }
+};
+
 template <typename _Iterator> class Tqdm : public IteratorWrapper<_Iterator> {
 protected:
-  _Iterator e;  // end
-  Params self;  // ha, ha
-
   // typedef std::iterator_traits<_Iterator> traits;
   typedef IteratorWrapper<_Iterator> TQDM_IT;
 
@@ -75,6 +89,43 @@ public:
   typedef typename TQDM_IT::reference reference;
   typedef typename TQDM_IT::iterator_category iterator_category;
 
+protected:
+  const iterator_type b;  // begin
+  iterator_type e;        // end
+  difference_type total;
+  Params self;  // ha, ha
+  time_point start_t;
+  iterator_type last_print_n;
+  time_point last_print_t;
+  float avg_time;
+  int pos;  // position
+  // status printer
+  StatusPrinter sp;
+
+  // TODO
+  static void moveto(int pos) {
+    if (pos < 0)
+      for (int i = 0; i > pos; --i)
+        printf("%s", _term_move_up());
+    else if (pos > 0)
+      for (int i = 0; i < pos; ++i)
+        printf("\n");
+  }
+
+  // TODO
+  static std::string
+  format_meter(difference_type n, difference_type total, float elapsed,
+               int ncols, const std::string &desc, const std::string &ascii,
+               const std::string &unit, bool unit_scale, float avg_time,
+               const std::string &bar_format) {
+    // just a hack to suppress Wunused for now
+    std::ostringstream os;
+    os << n << total << elapsed << ncols << desc << ascii << unit
+       << unit_scale << avg_time << bar_format;
+    return os.str();
+  };
+
+public:
   /** containter-like methods */
   // actually current value
   Tqdm &begin() { return *this; }
@@ -83,28 +134,31 @@ public:
 
   /** constructors */
   explicit Tqdm(iterator_type begin, iterator_type end)
-      : TQDM_IT(begin), e(end), self() {
-    self.total = difference_type(end - begin);
-  }
+      : TQDM_IT(begin), b(begin), e(end), total(end - begin), self(),
+        start_t(steady_clock::now()), last_print_n(begin),
+        last_print_t(start_t), avg_time(-1), pos(0) {}
 
   explicit Tqdm(iterator_type begin, difference_type total)
-      : TQDM_IT(begin), e(begin + total), self() {
-    self.total = total;
-  }
+      : TQDM_IT(begin), b(begin), e(begin + total), total(total), self(),
+        start_t(steady_clock::now()), last_print_n(begin),
+        last_print_t(start_t), avg_time(-1), pos(0) {}
 
   explicit Tqdm(const Tqdm &other)
-      : TQDM_IT(other.base()), e(other.end().base()), self(other.self) {}
-
-  explicit Tqdm &operator=(Tqdm &other) { this->Tqdm(other); }
-  explicit const Tqdm &operator=(const Tqdm &other) { this->Tqdm(other); }
+      : TQDM_IT(other.base()), b(other.b), e(other.e), total(other.total),
+        self(other.self), start_t(other.start_t),
+        last_print_n(other.last_print_n), last_print_t(other.last_print_t),
+        avg_time(other.avg_time), pos(other.pos), sp(other.sp) {}
 
   template <typename _Container,
             typename = typename std::enable_if<
                 !std::is_same<_Container, Tqdm>::value>::type>
   Tqdm(_Container &v)
-      : TQDM_IT(std::begin(v)), e(std::end(v)), self() {
-    self.total = e - this->base();
-  }
+      : TQDM_IT(std::begin(v)), b(std::begin(v)), e(std::end(v)),
+        total(e - b), self(), start_t(steady_clock::now()), last_print_n(b),
+        last_print_t(start_t), avg_time(-1), pos(0) {}
+
+  explicit Tqdm &operator=(Tqdm &other) { this->Tqdm(other); }
+  explicit const Tqdm &operator=(const Tqdm &other) { this->Tqdm(other); }
 
   // this is scary, non-standard
   // explicit operator bool() const { return this->base() != e; }
@@ -116,18 +170,88 @@ public:
   inline difference_type size_remaining() const { return e - this->base(); }
 
   /** TODO: magic methods */
+  virtual void close() {
+    if (!self.leave)
+      sp("");
+    else {
+      std::ostringstream os;
+      os << "finished: " << total << "/" << total << "\n";
+      sp(os.str());
+    }
+  }
+
   virtual inline void update(difference_type n) override {
     if (ended())
       throw std::out_of_range(
           "exhausted");  // TODO: don't throw, just double total
-    if (n < 0)
-      throw std::out_of_range("cannot have negative update");
+    if (n < 0) {
+      printf("n (%s) cannot be negative", _s(n));
+      throw std::out_of_range("negative step in forward iterator");
+    } else if (!n)
+      return;
 
-    TQDM_IT::update(n);
-    if (ended()) {
-      printf("\nfinished: %s/%s\n", _s(self.total), _s(self.total));
-    } else
-      printf("\r%s left", _s(size_remaining()));
+    TQDM_IT::update(n);  // increment pointer
+
+    if (self.disable)  // only safe to skip now
+      return;
+
+    difference_type delta_it = this->base() - last_print_n;
+    if (delta_it >= difference_type(self.miniters)) {
+      // We check the counter first, to reduce the overhead of now()
+      time_point cur_t = steady_clock::now();
+      float delta_t = diff(cur_t, last_print_t);
+      if (delta_t >= self.mininterval) {
+        float elapsed = diff(cur_t, start_t);
+        // EMA (not just overall average)
+        if (self.smoothing && delta_t) {
+          avg_time = avg_time < 0 ? delta_t / delta_it
+                                  : self.smoothing * delta_t / delta_it +
+                                        (1 - self.smoothing) * avg_time;
+        }
+
+        // TODO
+        if (pos)
+          moveto(pos);
+
+        // Print bar's update
+        sp(format_meter(b - this->base(), total, elapsed,
+                        self.dynamic_ncols
+                            ?
+                            // TODO: self.dynamic_ncols(self.fp)
+                            80
+                            : self.ncols,
+                        self.desc, self.ascii, self.unit, self.unit_scale,
+                        avg_time ? 1 / avg_time : -1, self.bar_format));
+
+        if (pos)
+          moveto(-pos);
+
+        // If no `miniters` was specified, adjust automatically to the
+        // maximum iteration rate seen so far.
+        // e.g.: After running `tqdm.update(5)`, subsequent
+        // calls to `tqdm.update()` will only cause an update after
+        // at least 5 more iterations.
+        if (self.dynamic_miniters) {
+          if (self.maxinterval && delta_t > self.maxinterval) {
+            self.miniters = self.miniters * self.maxinterval / delta_t;
+          } else if (self.mininterval && delta_t) {
+            self.miniters =
+                self.smoothing * delta_it * self.mininterval / delta_t +
+                (1 - self.smoothing) * self.miniters;
+          } else {
+            self.miniters = self.smoothing * delta_it +
+                            (1 - self.smoothing) * self.miniters;
+          }
+        }
+
+        // Store old values for next call
+        last_print_n = this->base();
+        last_print_t = cur_t;
+      }
+    }
+
+    if (ended())
+      close();
   }
 };
 

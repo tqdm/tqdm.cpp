@@ -21,6 +21,7 @@ Usage:
     ...
 
 @author Casper dC-L <github.com/casperdcl>
+@version 0.0.1-rc1.py4.8.4
 */
 
 #include <cassert>      // assert
@@ -133,13 +134,15 @@ public:
   Tqdm end() const { return Tqdm(e, e); }
 
   /** constructors */
-  explicit Tqdm(iterator_type begin, iterator_type end)
-      : TQDM_IT(begin), b(begin), e(end), total(end - begin), self(),
+  explicit Tqdm(iterator_type begin, iterator_type end,
+                Params self = Params())
+      : TQDM_IT(begin), b(begin), e(end), total(end - begin), self(self),
         start_t(steady_clock::now()), last_print_n(begin),
         last_print_t(start_t), avg_time(-1), pos(0) {}
 
-  explicit Tqdm(iterator_type begin, difference_type total)
-      : TQDM_IT(begin), b(begin), e(begin + total), total(total), self(),
+  explicit Tqdm(iterator_type begin, difference_type total,
+                Params self = Params())
+      : TQDM_IT(begin), b(begin), e(begin + total), total(total), self(self),
         start_t(steady_clock::now()), last_print_n(begin),
         last_print_t(start_t), avg_time(-1), pos(0) {}
 
@@ -152,10 +155,10 @@ public:
   template <typename _Container,
             typename = typename std::enable_if<
                 !std::is_same<_Container, Tqdm>::value>::type>
-  Tqdm(_Container &v)
+  Tqdm(_Container &v, Params self = Params())
       : TQDM_IT(std::begin(v)), b(std::begin(v)), e(std::end(v)),
-        total(e - b), self(), start_t(steady_clock::now()), last_print_n(b),
-        last_print_t(start_t), avg_time(-1), pos(0) {}
+        total(e - b), self(self), start_t(steady_clock::now()),
+        last_print_n(b), last_print_t(start_t), avg_time(-1), pos(0) {}
 
   explicit Tqdm &operator=(Tqdm &other) { this->Tqdm(other); }
   explicit const Tqdm &operator=(const Tqdm &other) { this->Tqdm(other); }
@@ -168,6 +171,9 @@ public:
   */
   inline bool ended() const { return this->base() == e; }
   inline difference_type size_remaining() const { return e - this->base(); }
+
+  Params &params() { return self; }
+  const Params &params() const { return self; }
 
   /** TODO: magic methods */
   virtual void close() {
@@ -256,41 +262,43 @@ public:
 };
 
 template <typename _Iterator, typename _Tqdm = Tqdm<_Iterator>>
-_Tqdm tqdm(_Iterator begin, _Iterator end) {
-  return _Tqdm(begin, end);
+_Tqdm tqdm(_Iterator begin, _Iterator end, Params p = Params()) {
+  return _Tqdm(begin, end, p);
 }
 
 template <typename _Iterator, typename _Tqdm = Tqdm<_Iterator>>
-_Tqdm tqdm(_Iterator begin, size_t total) {
-  return _Tqdm(begin, total);
+_Tqdm tqdm(_Iterator begin, size_t total, Params p = Params()) {
+  return _Tqdm(begin, total, p);
 }
 
 template <typename _Container,
           typename _Tqdm = Tqdm<typename _Container::iterator>>
-_Tqdm tqdm(_Container &v) {
-  return _Tqdm(v);
+_Tqdm tqdm(_Container &v, Params p = Params()) {
+  return _Tqdm(v, p);
 }
 
 template <size_t N, typename T, typename _Tqdm = Tqdm<T *>>
-_Tqdm tqdm(T (&tab)[N]) {
-  return _Tqdm(tab, N);
+_Tqdm tqdm(T (&tab)[N], Params p = Params()) {
+  return _Tqdm(tab, N, p);
 }
 
 template <typename SizeType = int>
 using RangeTqdm = Tqdm<RangeIterator<SizeType>>;
-template <typename SizeType> RangeTqdm<SizeType> range(SizeType n) {
+template <typename SizeType>
+RangeTqdm<SizeType> range(SizeType n, Params p = Params()) {
   return RangeTqdm<SizeType>(RangeIterator<SizeType>(n),
-                             RangeIterator<SizeType>(n));
+                             RangeIterator<SizeType>(n), p);
 }
 template <typename SizeType>
-RangeTqdm<SizeType> range(SizeType start, SizeType end) {
+RangeTqdm<SizeType> range(SizeType start, SizeType end, Params p = Params()) {
   return RangeTqdm<SizeType>(RangeIterator<SizeType>(start, end),
-                             RangeIterator<SizeType>(start, end));
+                             RangeIterator<SizeType>(start, end), p);
 }
 template <typename SizeType>
-RangeTqdm<SizeType> range(SizeType start, SizeType end, SizeType step) {
+RangeTqdm<SizeType> range(SizeType start, SizeType end, SizeType step,
+                          Params p = Params()) {
   return RangeTqdm<SizeType>(RangeIterator<SizeType>(start, end, step),
-                             RangeIterator<SizeType>(start, end, step));
+                             RangeIterator<SizeType>(start, end, step), p);
 }
 
 }  // tqdm

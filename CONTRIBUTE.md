@@ -12,6 +12,20 @@ There also exists an ad-hoc
 for discussion on small issues.
 
 
+# TODO
+
+Ranked by priority
+
+- `format_meter`
+- `close`
+- support all `Params` (starting with file descriptor output)
+- fix potential range update bug
+- anon namespaces
+- thread safety
+- coverage reporting
+- release 0.0.1-py4.8.4 (includes based-on-tqdm.py version)
+
+
 # Building
 
 To build and test on any system and IDE, use `CMake`.

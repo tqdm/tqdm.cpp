@@ -36,7 +36,7 @@ Usage:
 #include <type_traits>  // is_pointer, ...
 #include <utility>      // swap
 #include <functional>   // function
-#include <sstream>      // TODO: remove
+// #include <wchar.h>      // wchar_t (TODO: stdafx, use for unicode!)
 #include "tqdm/utils.h"
 
 namespace tqdm {
@@ -46,7 +46,7 @@ struct Params {
   // size_t total = -1;
   bool leave = true;
   FILE *f = stderr;
-  int ncols = -1;
+  int ncols = 60;  // TODO: -1, then dynamically alloc first time with fallback
   float mininterval = 0.1f;
   float maxinterval = 10.0f;
   bool dynamic_miniters = false;
@@ -64,14 +64,36 @@ struct Params {
 };
 
 struct StatusPrinter {
-  size_t last_n = 0;
+  size_t last_n;
+  FILE *f;
 
-  // TODO
-  void operator()(const std::string &s) {
-    printf("%s", s.c_str());
+  StatusPrinter(FILE *f = stderr) : last_n(0), f(f) {}
+
+  /**
+   Prints to internal file without clearing previous line.
+   */
+  virtual void operator[](const std::string &s) const {
+    size_t bytes_remaining = s.size();
+    auto buf_p = s.c_str();
+    while (bytes_remaining) {
+      size_t bytes_written = fwrite(buf_p, 1, bytes_remaining, f);
+      bytes_remaining -= bytes_written;
+      buf_p += bytes_written;
+      if (ferror(f)) {
+        perror("fwrite");
+      }
+    }
+  }
+
+  /**
+   Prints to internal file overwriting current line.
+   */
+  virtual void operator()(const std::string &s) {
+    operator[](s);
     for (unsigned i = s.size(); i < last_n; ++i)
-      printf(" ");
-    printf("\r");
+      fwrite(" ", 1, 1, f);
+    fwrite("\r", 1, 1, f);
+    fflush(f);
     last_n = s.size();
   }
 };
@@ -104,27 +126,162 @@ protected:
   StatusPrinter sp;
 
   // TODO
-  static void moveto(int pos) {
+  void moveto(int pos) const {
     if (pos < 0)
       for (int i = 0; i > pos; --i)
-        printf("%s", _term_move_up());
+        sp[_term_move_up()];
     else if (pos > 0)
       for (int i = 0; i < pos; ++i)
-        printf("\n");
+        sp["\n"];
   }
 
+  template <typename String,
+            typename = typename std::enable_if<
+                std::is_same<String, std::string>::value ||
+                std::is_same<String, std::wstring>::value>::type>
   // TODO
-  static std::string
-  format_meter(difference_type n, difference_type total, float elapsed,
-               int ncols, const std::string &desc, const std::string &ascii,
-               const std::string &unit, bool unit_scale, float avg_time,
-               const std::string &bar_format) {
-    // just a hack to suppress Wunused for now
-    std::ostringstream os;
-    os << n << total << elapsed << ncols << desc << ascii << unit
-       << unit_scale << avg_time << bar_format;
-    return os.str();
-  };
+  static String format_meter(difference_type n, difference_type total,
+                             float elapsed, int ncols, const String &prefix,
+                             const String &ascii, const String &unit,
+                             bool unit_scale, float rate,
+                             const String &bar_format) {
+    typedef typename String::value_type Char;
+    // sanity check: total
+    if (n > total)
+      total = -1;
+
+    std::string elapsed_str =
+        elapsed < 0 ? "" : format_interval(size_t(elapsed));
+
+    // if unspecified, attempt to use rate = average speed
+    // (we allow manual override since predicting time is an arcane art)
+    if (rate < 0 && elapsed)
+      rate = n / elapsed;
+    float inv_rate = (rate && (rate < 1)) ? 1.0f / rate : -1;
+    std::string rate_fmt;
+    if (rate < 0.0f) {
+      rate_fmt = "?";
+    } else {
+      if (unit_scale) {
+        rate_fmt = format_sizeof(inv_rate < 0 ? rate : inv_rate);
+      } else {
+        rate_fmt.reserve(80);
+        sprintf(&rate_fmt.front(), "%5.2f", inv_rate < 0 ? rate : inv_rate);
+      }
+    }
+
+    rate_fmt += (inv_rate < 0 ? unit : "s/") + (inv_rate < 0 ? "/s" : unit);
+    std::string n_fmt;
+    std::string total_fmt;
+    if (unit_scale) {
+      n_fmt = format_sizeof(n);
+      if (total >= 0)
+        total_fmt = format_sizeof(total);
+    } else {
+      n_fmt = std::to_string(n);
+      total_fmt = std::to_string(total);
+    }
+
+    // no total: no progressbar, ETA, just progress stats
+    if (total < 0) {
+      return prefix + n_fmt + unit + " [" + elapsed_str + ", " + rate_fmt +
+             "]";
+    }
+    // total is known: we can predict some stats
+    else {
+      // fractional and percentage progress
+      float frac = float(n) / float(total);
+      float percentage = frac * 100.0f;
+
+      std::string remaining_str =
+          rate <= 0 ? "?"
+                    : format_interval(difference_type((total - n) / rate));
+
+      // format the stats displayed to the left and right sides of the bar
+      String l_bar;
+      l_bar.reserve(256);
+      sprintf(&l_bar.front(), "%s%3.0f%%%s", prefix.c_str(), percentage,
+              ncols > 0 ? "|" : "");
+      String r_bar = String(ncols > 0 ? "|" : "") + " " + n_fmt + "/" +
+                     total_fmt + " [" + elapsed_str + "<" + remaining_str +
+                     ", " + rate_fmt + "]";
+      if (ncols <= 0)
+        return l_bar + r_bar;
+      if (!bar_format.empty()) {
+        return "";
+        /*
+            # Custom bar formatting
+            # Populate a dict with all available progress indicators
+            bar_args = {'n': n,
+                        'n_fmt': n_fmt,
+                        'total': total,
+                        'total_fmt': total_fmt,
+                        'percentage': percentage,
+                        'rate': rate if inv_rate is None else inv_rate,
+                        'rate_noinv': rate,
+                        'rate_noinv_fmt': ((format_sizeof(rate)
+                                           if unit_scale else
+                                           '{0:5.2f}'.format(rate))
+                                           if rate else '?') + unit + '/s',
+                        'rate_fmt': rate_fmt,
+                        'elapsed': elapsed_str,
+                        'remaining': remaining_str,
+                        'l_bar': l_bar,
+                        'r_bar': r_bar,
+                        'desc': prefix if prefix else '',
+                        # 'bar': full_bar  # replaced by procedure below
+                        }
+
+            # Interpolate supplied bar format with the dict
+            if '{bar}' in bar_format:
+                # Format left/right sides of the bar, and format the bar
+                # later in the remaining space (avoid breaking display)
+                l_bar_user, r_bar_user = bar_format.split('{bar}')
+                l_bar = l_bar_user.format(**bar_args)
+                r_bar = r_bar_user.format(**bar_args)
+            else:
+                # Else no progress bar, we can just format and return
+                return bar_format.format(**bar_args)
+        */
+      }
+
+      // Formatting progress bar
+      // space available for bar's display
+      const int N_BARS =
+          ncols > 0
+              ? std::max(1, ncols - int(l_bar.size()) - int(r_bar.size()))
+              : 10;
+
+      int bar_length, frac_bar_length;
+      String bar;
+      Char frac_bar;
+      // format bar depending on availability of unicode/ascii chars
+      if (!ascii.empty()) {
+        std::tie(bar_length, frac_bar_length) =
+            divmod(int(frac * N_BARS * int(ascii.size() - 1)),
+                   int(ascii.size() - 1));
+
+        bar = String(bar_length, Char(ascii.back()));
+        frac_bar = frac_bar_length ? 48 + frac_bar_length : ' ';
+      } else {
+        std::tie(bar_length, frac_bar_length) =
+            divmod(int(frac * N_BARS * 8), 8);
+
+        bar = String(bar_length, Char(0x2588));
+        frac_bar = frac_bar_length ? Char(0x2590 - frac_bar_length) : ' ';
+      }
+      String full_bar;
+      // whitespace padding
+      if (bar_length < N_BARS)
+        full_bar = bar + frac_bar +
+                   String(std::max(N_BARS - bar_length - 1, 0), ' ');
+      else
+        full_bar = bar + String(std::max(N_BARS - bar_length, 0), ' ');
+
+      // Piece together the bar parts
+      return String(l_bar.c_str()) + full_bar + r_bar;
+    }
+  }
 
 public:
   /** containter-like methods */
@@ -138,13 +295,13 @@ public:
                 Params self = Params())
       : TQDM_IT(begin), b(begin), e(end), total(end - begin), self(self),
         start_t(steady_clock::now()), last_print_n(begin),
-        last_print_t(start_t), avg_time(-1), pos(0) {}
+        last_print_t(start_t), avg_time(-1), pos(0), sp(self.f) {}
 
   explicit Tqdm(iterator_type begin, difference_type total,
                 Params self = Params())
       : TQDM_IT(begin), b(begin), e(begin + total), total(total), self(self),
         start_t(steady_clock::now()), last_print_n(begin),
-        last_print_t(start_t), avg_time(-1), pos(0) {}
+        last_print_t(start_t), avg_time(-1), pos(0), sp(self.f) {}
 
   explicit Tqdm(const Tqdm &other)
       : TQDM_IT(other.base()), b(other.b), e(other.e), total(other.total),
@@ -158,7 +315,8 @@ public:
   Tqdm(_Container &v, Params self = Params())
       : TQDM_IT(std::begin(v)), b(std::begin(v)), e(std::end(v)),
         total(e - b), self(self), start_t(steady_clock::now()),
-        last_print_n(b), last_print_t(start_t), avg_time(-1), pos(0) {}
+        last_print_n(b), last_print_t(start_t), avg_time(-1), pos(0),
+        sp(self.f) {}
 
   explicit Tqdm &operator=(Tqdm &other) { this->Tqdm(other); }
   explicit const Tqdm &operator=(const Tqdm &other) { this->Tqdm(other); }
@@ -171,6 +329,7 @@ public:
   */
   inline bool ended() const { return this->base() == e; }
   inline difference_type size_remaining() const { return e - this->base(); }
+  inline difference_type size_done() const { return this->base() - b; }
 
   Params &params() { return self; }
   const Params &params() const { return self; }
@@ -180,9 +339,11 @@ public:
     if (!self.leave)
       sp("");
     else {
-      std::ostringstream os;
-      os << "finished: " << total << "/" << total << "\n";
-      sp(os.str());
+      // sp["\n"];
+      char res[256];
+      sprintf(res, "\nfinished: %lld/%lld\n", (long long)total,
+              (long long)total);
+      sp[res];
     }
   }
 
@@ -220,7 +381,7 @@ public:
           moveto(pos);
 
         // Print bar's update
-        sp(format_meter(b - this->base(), total, elapsed,
+        sp(format_meter(size_done(), total, elapsed,
                         self.dynamic_ncols
                             ?
                             // TODO: self.dynamic_ncols(self.fp)

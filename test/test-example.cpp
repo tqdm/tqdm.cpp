@@ -30,8 +30,11 @@ int main() {
       printf(" \b");
 
   printf("range-based array\n");
+  tqdm::Params p;
+  p.miniters = 1;
+  p.mininterval = 0;
   // for (auto it = tqdm::tqdm(a); *it < a[N - 1]; ++it)
-  for (auto &i : tqdm::tqdm(a))
+  for (auto &i : tqdm::tqdm(a, p))
     if (i < 0)
       printf(" \b");
 

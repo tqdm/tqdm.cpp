@@ -77,15 +77,14 @@ inline T diff(const time_point &to, const time_point &from) {
   return std::chrono::duration_cast<duration<T>>(to - from).count();
 }
 
-template <typename T>
+#ifndef _s
 /**
 Converts anything to a c-string.
 * TODO: could this cause a memory leak?
 @author Casper da Costa-Luis
 */
-static inline const char *_s(const T &obj) {
-  return std::to_string(obj).c_str();
-}
+#define _s(obj) std::to_string(obj).c_str()
+#endif  // _S
 
 template <typename _Iterator>
 /**
@@ -283,6 +282,70 @@ const char *_term_move_up() {
 #else
   return "\x1b[A";
 #endif
+}
+
+template <typename IntType1, typename IntType2,
+          typename = std::is_integral<IntType1>,
+          typename = std::is_integral<IntType2>,
+          typename RetType = decltype(IntType1(1) / IntType2(2))>
+inline std::pair<RetType, RetType> divmod(IntType1 n, IntType2 d) {
+  return std::make_pair(n / d, n % d);
+}
+
+template <typename IntType, typename = std::is_integral<IntType>>
+/**
+Formats a number of seconds as a clock time, [H:]MM:SS
+
+@param[in] t  : IntType
+    Number of seconds.
+@return[out]  : string
+    [H:]MM:SS
+@author Casper da Costa-Luis
+*/
+std::string format_interval(IntType t) {
+  IntType mins, s, h, m;
+  std::tie(mins, s) = divmod(t, 60);
+  std::tie(h, m) = divmod(mins, 60);
+  char res[64];
+  if (h)
+    sprintf(res, "%d:%02d:%02d", int(h), int(m), int(s));
+  else
+    sprintf(res, "%02d:%02d", int(m), int(s));
+  return res;
+}
+
+/**
+Formats a number (greater than unity) with SI Order of Magnitude
+prefixes.
+
+@param[in] num  : float
+  Number ( >= 1) to format.
+@param[in] suffix  : string, optional
+    Post-postfix [default: ""].
+@return[out]  : string
+    Number with Order of Magnitude SI unit postfix.
+@author Casper da Costa-Luis
+*/
+std::string format_sizeof(float num, std::string suffix = "") {
+  static const char units[] = " KMGTPEZ";
+  char res[80];
+  for (char unit : units) {
+    if (abs(num) < 999.95) {
+      if (abs(num) < 99.95) {
+        if (abs(num) < 9.995) {
+          sprintf(res, "%1.2f%c%s", num, unit, suffix.c_str());
+          return res;
+        }
+        sprintf(res, "%2.1f%c%s", num, unit, suffix.c_str());
+        return res;
+      }
+      sprintf(res, "%3.0f%c%s", num, unit, suffix.c_str());
+      return res;
+    }
+    num /= 1000.0f;
+  }
+  sprintf(res, "%3.1fY%s", num, suffix.c_str());
+  return res;
 }
 
 static void wait_for_write(int fd) {

@@ -23,6 +23,7 @@
 // #include <ctime>
 // #include <ratio>
 #include <chrono>  // time_point, steady_clock
+#include <cmath>   // abs
 
 #ifdef IS_WIN
 #ifndef NOMINMAX
@@ -331,9 +332,9 @@ std::string format_sizeof(float num, std::string suffix = "") {
   static const char units[] = " KMGTPEZ";
   char res[80];
   for (char unit : units) {
-    if (abs(num) < 999.95) {
-      if (abs(num) < 99.95) {
-        if (abs(num) < 9.995) {
+    if (std::abs(num) < 999.95) {
+      if (std::abs(num) < 99.95) {
+        if (std::abs(num) < 9.995) {
           sprintf(res, "%1.2f%c%s", num, unit, suffix.c_str());
           return res;
         }

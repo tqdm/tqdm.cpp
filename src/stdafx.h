@@ -14,6 +14,7 @@
 #include <utility>      // swap
 #include <chrono>       // time_point, steady_clock
 #include <functional>   // function
+#include <cmath>        // abs
 
 #ifdef _WIN32
 #ifndef NOMINMAX

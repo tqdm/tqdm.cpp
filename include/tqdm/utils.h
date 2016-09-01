@@ -249,14 +249,22 @@ public:
     return (total - current) / step;
   }
 
+  /** here be dragons */
   inline bool operator==(const RangeIterator &rhs) const {
-    return current == rhs.current;
-  }
-  inline bool operator!=(const RangeIterator &rhs) const {
-    return !(*this == rhs);
+    return current == rhs.total;
   }
   inline bool operator<(const RangeIterator &rhs) const {
-    return current < rhs.current;
+    return current < rhs.total;
+  }
+  inline noconst_value_type operator-(const RangeIterator &rhs) const {
+    // it's used in `end - begin`, but `end` is only a sentinel
+    // so let's use `begin `to be consistent
+    return rhs.size_remaining();
+  }
+  /** end of dubious section */
+
+  inline bool operator!=(const RangeIterator &rhs) const {
+    return !(*this == rhs);
   }
   inline bool operator<=(const RangeIterator &rhs) const {
     return *this < rhs || *this == rhs;
@@ -266,13 +274,6 @@ public:
   }
   inline bool operator>(const RangeIterator &rhs) const {
     return !(*this <= rhs);
-  }
-
-  /** here be dragons */
-  inline noconst_value_type operator-(const RangeIterator &rhs) const {
-    // it's used in `end - begin`, but `end` is only a sentinel
-    // so let's use `begin `to be consistent
-    return rhs.size_remaining();
   }
 };
 

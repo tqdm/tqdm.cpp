@@ -46,7 +46,8 @@ struct Params {
   // size_t total = -1;
   bool leave = true;
   FILE *f = stderr;
-  int ncols = 60;  // TODO: -1, then dynamically alloc first time with fallback
+  int ncols =
+      60;  // TODO: -1, then dynamically alloc first time with fallback
   float mininterval = 0.1f;
   float maxinterval = 10.0f;
   bool dynamic_miniters = false;

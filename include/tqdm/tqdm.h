@@ -336,15 +336,66 @@ public:
   const Params &params() const { return self; }
 
   /** TODO: magic methods */
+
+  /** Cleanup and (if leave=False) close the progressbar. */
   virtual void close() {
-    if (!self.leave)
-      sp("");
-    else {
-      // sp["\n"];
-      char res[256];
-      sprintf(res, "\nfinished: %lld/%lld\n", (long long)total,
-              (long long)total);
-      sp[res];
+    if (self.disable)
+      return;
+
+    // Prevent multiple closures
+    self.disable = true;
+
+    // decrement instance pos and remove from internal set
+    // TODO: int pos = self.position;
+    // TODO: decr_instances();
+
+    // GUI mode
+    // TODO: make ptr: if (!sp) return;
+
+    // TODO
+    auto fp_write = [this](const std::string &s) {
+
+      auto buf_p = s.c_str();
+      size_t bytes_remaining = s.size();
+      while (bytes_remaining) {
+        size_t bytes_written = fwrite(buf_p, 1, bytes_remaining, self.f);
+        bytes_remaining -= bytes_written;
+        buf_p += bytes_written;
+        if (ferror(self.f)) {
+          perror("fwrite");
+        }
+      }
+    };
+
+    // TODO: ? try{fp_write(""); } catch (...){return;}
+
+    if (pos)
+      moveto(pos);
+
+    if (self.leave) {
+      if (last_print_n < this->base()) {
+
+        time_point cur_t = steady_clock::now();
+        // stats for overall rate (no weighted average)
+        sp(format_meter(size_done(), total, diff(cur_t, start_t),
+                        self.dynamic_ncols
+                            ?
+                            // TODO: self.dynamic_ncols(self.fp)
+                            80
+                            : self.ncols,
+                        self.desc, self.ascii, self.unit, self.unit_scale, -1,
+                        self.bar_format));
+      }
+      if (pos)
+        moveto(-pos);
+      else
+        fp_write("\n");
+    } else {
+      sp("");  // clear up last bar
+      if (pos)
+        moveto(-pos);
+      else
+        fp_write("\r");
     }
   }
 

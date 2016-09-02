@@ -16,8 +16,6 @@ for discussion on small issues.
 
 Ranked by priority
 
-- `format_meter`
-- `close`
 - support all `Params` (starting with file descriptor output)
 - fix potential range update bug
 - anon namespaces

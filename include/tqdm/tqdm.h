@@ -4,12 +4,6 @@
 Customisable progressbar decorator for iterators.
 Includes a default range iterator printing to stderr.
 
-TODO:
-* handle s(tep) with operator+/-(=)
-* chrono and delay printing
-* class status printer
-* iterator-less: fake range iterable, update() increments value
-
 Usage:
   # include "tqdm/tqdm.h"
   for(int i : tqdm::range(4))

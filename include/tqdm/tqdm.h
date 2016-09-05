@@ -376,9 +376,7 @@ public:
         // stats for overall rate (no weighted average)
         sp(format_meter(size_done(), total, diff(cur_t, start_t),
                         self.dynamic_ncols
-                            ?
-                            // TODO: self.dynamic_ncols(self.fp)
-                            80
+                            ? _environ_cols(self.f)
                             : self.ncols,
                         self.desc, self.ascii, self.unit, self.unit_scale, -1,
                         self.bar_format));
@@ -432,9 +430,7 @@ public:
         // Print bar's update
         sp(format_meter(size_done(), total, elapsed,
                         self.dynamic_ncols
-                            ?
-                            // TODO: self.dynamic_ncols(self.fp)
-                            80
+                            ? _environ_cols(self.f)
                             : self.ncols,
                         self.desc, self.ascii, self.unit, self.unit_scale,
                         avg_time ? 1 / avg_time : -1, self.bar_format));

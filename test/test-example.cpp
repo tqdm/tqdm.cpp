@@ -29,12 +29,12 @@ int main() {
     if (i < 0)
       printf(" \b");
 
-  printf("range-based array\n");
   tqdm::Params p;
+  p.desc = "range-based array";
   p.miniters = 1;
   p.mininterval = 0;
   p.unit_scale = true;
-  p.desc = "all";
+  p.dynamic_ncols = true;
   // for (auto it = tqdm::tqdm(a); *it < a[N - 1]; ++it)
   for (auto &i : tqdm::tqdm(a, p))
     if (i < 0)

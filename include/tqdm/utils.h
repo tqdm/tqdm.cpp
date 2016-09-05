@@ -17,6 +17,7 @@
 #include <cassert>      // assert
 #include <cerrno>       // EAGAIN
 #include <cstddef>      // ptrdiff_t, size_t
+#include <cstdio>       // printf
 #include <cstring>      // strlen
 #include <iterator>     // iterator
 #include <type_traits>  // is_pointer, ...
@@ -40,10 +41,33 @@
 #endif
 #include <WinSock2.h>  // select
 #include <io.h>        // write
-#else                  // _WIN32
+#include <windows.h>   // GetConsoleScreenBufferInfo
+#else                  // IS_WIN
 #include <poll.h>      // poll
 #include <unistd.h>    // STDERR_FILENO
-#endif                 // _WIN32
+#include <sys/ioctl.h> // ioctl
+#endif                 // IS_WIN
+
+
+int _environ_cols(FILE *f) 
+{
+#ifdef IS_WIN
+  CONSOLE_SCREEN_BUFFER_INFO csbi;
+  int cols;
+  // int rows;
+  // GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+  GetConsoleScreenBufferInfo(GetStdHandle(f), &csbi);
+  cols = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+  // rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+  return c;
+#else  // IS_WIN
+  struct winsize w;
+  // ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+  ioctl(fileno(f), TIOCGWINSZ, &w);
+  return w.ws_col;
+#endif  // IS_WIN
+}
+
 
 /** TODO: port from python
  * colorama win

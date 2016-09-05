@@ -33,7 +33,8 @@ int main() {
   tqdm::Params p;
   p.miniters = 1;
   p.mininterval = 0;
-  // p.desc = "all";
+  p.unit_scale = true;
+  p.desc = "all";
   // for (auto it = tqdm::tqdm(a); *it < a[N - 1]; ++it)
   for (auto &i : tqdm::tqdm(a, p))
     if (i < 0)

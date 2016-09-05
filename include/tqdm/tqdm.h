@@ -160,8 +160,9 @@ protected:
       if (unit_scale) {
         rate_fmt = format_sizeof(inv_rate < 0 ? rate : inv_rate);
       } else {
-        rate_fmt.reserve(80);
-        sprintf(&rate_fmt.front(), "%5.2f", inv_rate < 0 ? rate : inv_rate);
+        char res[80];
+        sprintf(res, "%5.2f", inv_rate < 0 ? rate : inv_rate);
+        rate_fmt = res;
       }
     }
 
@@ -179,8 +180,8 @@ protected:
 
     // no total: no progressbar, ETA, just progress stats
     if (total < 0) {
-      return prefix + n_fmt + unit + " [" + elapsed_str + ", " + rate_fmt +
-             "]";
+      return (prefix.empty() ? "" : prefix + ": ") + n_fmt + unit + " [" +
+             elapsed_str + ", " + rate_fmt + "]";
     }
     // total is known: we can predict some stats
     else {
@@ -194,9 +195,11 @@ protected:
 
       // format the stats displayed to the left and right sides of the bar
       String l_bar;
-      l_bar.reserve(256);
-      sprintf(&l_bar.front(), "%s%3.0f%%%s", prefix.c_str(), percentage,
+      char reserve[256];
+      sprintf(reserve, "%s%3.0f%%%s",
+              prefix.empty() ? "" : (prefix + ": ").c_str(), percentage,
               ncols > 0 ? "|" : "");
+      l_bar = reserve;
       String r_bar = String(ncols > 0 ? "|" : "") + " " + n_fmt + "/" +
                      total_fmt + " [" + elapsed_str + "<" + remaining_str +
                      ", " + rate_fmt + "]";

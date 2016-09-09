@@ -1,3 +1,4 @@
+#include <algorithm>    // min, max
 #include <atomic>       // atomic
 #include <cassert>      // assert
 #include <cerrno>       // EAGAIN

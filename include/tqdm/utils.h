@@ -39,35 +39,43 @@
 #ifndef STDERR_FILENO
 #define STDERR_FILENO 2
 #endif
-#include <WinSock2.h>  // select
-#include <io.h>        // write
-#include <windows.h>   // GetConsoleScreenBufferInfo
-#else                  // IS_WIN
-#include <poll.h>      // poll
-#include <unistd.h>    // STDERR_FILENO
-#include <sys/ioctl.h> // ioctl
-#endif                 // IS_WIN
+#include <WinSock2.h>   // select
+#include <io.h>         // write
+#include <windows.h>    // GetConsoleScreenBufferInfo
+#else                   // IS_WIN
+#include <poll.h>       // poll
+#include <unistd.h>     // STDERR_FILENO
+#include <sys/ioctl.h>  // ioctl
+#endif                  // IS_WIN
 
+#ifndef sprintf_s
+#define sprintf_s sprintf
+#endif
 
-int _environ_cols(FILE *f) 
-{
+int _environ_cols(FILE *f) {
 #ifdef IS_WIN
+  int fn = _fileno(f);
+  if (fn < 0 || fn > 2)
+    return -1;
   CONSOLE_SCREEN_BUFFER_INFO csbi;
   int cols;
   // int rows;
   // GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-  GetConsoleScreenBufferInfo(GetStdHandle(f), &csbi);
-  cols = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+  GetConsoleScreenBufferInfo(
+      GetStdHandle(fn == 2 ? STD_ERROR_HANDLE : STD_OUTPUT_HANDLE), &csbi);
+  cols = csbi.srWindow.Right - csbi.srWindow.Left;  // +1;
   // rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-  return c;
-#else  // IS_WIN
+  return cols;
+#else   // IS_WIN
+  int fn = fileno(f);
+  if (fn < 0 || fn > 2)
+    return -1;
   struct winsize w;
   // ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-  ioctl(fileno(f), TIOCGWINSZ, &w);
+  ioctl(fn, TIOCGWINSZ, &w);
   return w.ws_col;
 #endif  // IS_WIN
 }
-
 
 /** TODO: port from python
  * colorama win
@@ -137,11 +145,7 @@ public:
   IteratorWrapper() : p() {}
   explicit IteratorWrapper(iterator_type x) : p(x) {}
   explicit IteratorWrapper(const IteratorWrapper &mit) : p(mit.p) {}
-  explicit IteratorWrapper &operator=(IteratorWrapper &rhs) {
-    p = rhs.p;
-    return *this;
-  }
-  explicit const IteratorWrapper &operator=(const IteratorWrapper &rhs) {
+  explicit IteratorWrapper &operator=(const IteratorWrapper &rhs) {
     p = rhs.p;
     return *this;
   }
@@ -238,7 +242,8 @@ protected:
 
 public:
   typedef typename traits::pointer iterator_type;
-  typedef typename traits::difference_type difference_type;
+  // typedef typename traits::difference_type difference_type;
+  typedef typename traits::value_type difference_type;
   // typedef noconst_value_type difference_type;
   typedef typename traits::value_type value_type;
   typedef typename traits::pointer pointer;
@@ -310,10 +315,9 @@ const char *_term_move_up() {
 #endif
 }
 
-template <typename IntType1, typename IntType2,
+template <typename IntType1, typename IntType2, typename RetType = IntType1,
           typename = std::is_integral<IntType1>,
-          typename = std::is_integral<IntType2>,
-          typename RetType = decltype(IntType1(1) / IntType2(2))>
+          typename = std::is_integral<IntType2>>
 inline std::pair<RetType, RetType> divmod(IntType1 n, IntType2 d) {
   return std::make_pair(n / d, n % d);
 }
@@ -334,17 +338,18 @@ std::string format_interval(IntType t) {
   std::tie(h, m) = divmod(mins, 60);
   char res[64];
   if (h)
-    sprintf(res, "%d:%02d:%02d", int(h), int(m), int(s));
+    sprintf_s(res, "%d:%02d:%02d", int(h), int(m), int(s));
   else
-    sprintf(res, "%02d:%02d", int(m), int(s));
+    sprintf_s(res, "%02d:%02d", int(m), int(s));
   return res;
 }
 
+template <typename FloatType>
 /**
 Formats a number (greater than unity) with SI Order of Magnitude
 prefixes.
 
-@param[in] num  : float
+@param[in] num  : FloatType
   Number ( >= 1) to format.
 @param[in] suffix  : string, optional
     Post-postfix [default: ""].
@@ -352,25 +357,26 @@ prefixes.
     Number with Order of Magnitude SI unit postfix.
 @author Casper da Costa-Luis
 */
-std::string format_sizeof(float num, std::string suffix = "") {
+std::string format_sizeof(FloatType _num, std::string suffix = "") {
+  double num = double(_num);
   static const char units[] = " KMGTPEZ";
   char res[80];
   for (char unit : units) {
     if (std::abs(num) < 999.95) {
       if (std::abs(num) < 99.95) {
         if (std::abs(num) < 9.995) {
-          sprintf(res, "%1.2f%c%s", num, unit, suffix.c_str());
+          sprintf_s(res, "%1.2lf%c%s", num, unit, suffix.c_str());
           return res;
         }
-        sprintf(res, "%2.1f%c%s", num, unit, suffix.c_str());
+        sprintf_s(res, "%2.1lf%c%s", num, unit, suffix.c_str());
         return res;
       }
-      sprintf(res, "%3.0f%c%s", num, unit, suffix.c_str());
+      sprintf_s(res, "%3.0lf%c%s", num, unit, suffix.c_str());
       return res;
     }
-    num /= 1000.0f;
+    num /= 1000;
   }
-  sprintf(res, "%3.1fY%s", num, suffix.c_str());
+  sprintf_s(res, "%3.1lfY%s", num, suffix.c_str());
   return res;
 }
 

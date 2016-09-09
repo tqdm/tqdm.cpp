@@ -18,6 +18,7 @@ Usage:
 @version 0.0.1-rc1.py4.8.4
 */
 
+#include <algorithm>    // min, max
 #include <cassert>      // assert
 #include <cinttypes>    // PRIu64
 #include <cstddef>      // ptrdiff_t, size_t
@@ -85,7 +86,7 @@ struct StatusPrinter {
    */
   virtual void operator()(const std::string &s) {
     operator[](s);
-    for (unsigned i = s.size(); i < last_n; ++i)
+    for (size_t i = s.size(); i < last_n; ++i)
       fwrite(" ", 1, 1, f);
     fwrite("\r", 1, 1, f);
     fflush(f);
@@ -161,7 +162,7 @@ protected:
         rate_fmt = format_sizeof(inv_rate < 0 ? rate : inv_rate);
       } else {
         char res[80];
-        sprintf(res, "%5.2f", inv_rate < 0 ? rate : inv_rate);
+        sprintf_s(res, "%5.2f", inv_rate < 0 ? rate : inv_rate);
         rate_fmt = res;
       }
     }
@@ -190,15 +191,14 @@ protected:
       float percentage = frac * 100.0f;
 
       std::string remaining_str =
-          rate <= 0 ? "?"
-                    : format_interval(difference_type((total - n) / rate));
+          rate <= 0 ? "?" : format_interval(size_t((total - n) / rate));
 
       // format the stats displayed to the left and right sides of the bar
       String l_bar;
       char reserve[256];
-      sprintf(reserve, "%s%3.0f%%%s",
-              prefix.empty() ? "" : (prefix + ": ").c_str(), percentage,
-              ncols > 0 ? "|" : "");
+      sprintf_s(reserve, "%s%3.0f%%%s",
+                prefix.empty() ? "" : (prefix + ": ").c_str(), percentage,
+                ncols > 0 ? "|" : "");
       l_bar = reserve;
       String r_bar = String(ncols > 0 ? "|" : "") + " " + n_fmt + "/" +
                      total_fmt + " [" + elapsed_str + "<" + remaining_str +
@@ -316,8 +316,10 @@ public:
         last_print_n(b), last_print_t(start_t), avg_time(-1), pos(0),
         sp(self.f) {}
 
-  explicit Tqdm &operator=(Tqdm &other) { this->Tqdm(other); }
-  explicit const Tqdm &operator=(const Tqdm &other) { this->Tqdm(other); }
+  explicit Tqdm &operator=(const Tqdm &other) {
+    this->Tqdm(other);
+    return *this;
+  }
 
   // this is scary, non-standard
   // explicit operator bool() const { return this->base() != e; }
@@ -353,7 +355,7 @@ public:
     auto fp_write = [this](const std::string &s) {
 
       auto buf_p = s.c_str();
-      size_t bytes_remaining = s.size();
+      size_t bytes_remaining = s.length();
       while (bytes_remaining) {
         size_t bytes_written = fwrite(buf_p, 1, bytes_remaining, self.f);
         bytes_remaining -= bytes_written;
@@ -375,9 +377,8 @@ public:
         time_point cur_t = steady_clock::now();
         // stats for overall rate (no weighted average)
         sp(format_meter(size_done(), total, diff(cur_t, start_t),
-                        self.dynamic_ncols
-                            ? _environ_cols(self.f)
-                            : self.ncols,
+                        self.dynamic_ncols ? _environ_cols(self.f)
+                                           : self.ncols,
                         self.desc, self.ascii, self.unit, self.unit_scale, -1,
                         self.bar_format));
       }
@@ -392,6 +393,7 @@ public:
       else
         fp_write("\r");
     }
+    fflush(self.f);
   }
 
   virtual inline void update(difference_type n) override {
@@ -409,8 +411,8 @@ public:
     if (self.disable)  // only safe to skip now
       return;
 
-    difference_type delta_it = this->base() - last_print_n;
-    if (delta_it >= difference_type(self.miniters)) {
+    auto delta_it = this->base() - last_print_n;
+    if (delta_it >= decltype(delta_it)(self.miniters)) {
       // We check the counter first, to reduce the overhead of now()
       time_point cur_t = steady_clock::now();
       float delta_t = diff(cur_t, last_print_t);
@@ -429,9 +431,8 @@ public:
 
         // Print bar's update
         sp(format_meter(size_done(), total, elapsed,
-                        self.dynamic_ncols
-                            ? _environ_cols(self.f)
-                            : self.ncols,
+                        self.dynamic_ncols ? _environ_cols(self.f)
+                                           : self.ncols,
                         self.desc, self.ascii, self.unit, self.unit_scale,
                         avg_time ? 1 / avg_time : -1, self.bar_format));
 
@@ -445,14 +446,15 @@ public:
         // at least 5 more iterations.
         if (self.dynamic_miniters) {
           if (self.maxinterval && delta_t > self.maxinterval) {
-            self.miniters = self.miniters * self.maxinterval / delta_t;
-          } else if (self.mininterval && delta_t) {
             self.miniters =
-                self.smoothing * delta_it * self.mininterval / delta_t +
-                (1 - self.smoothing) * self.miniters;
+                size_t(self.miniters * self.maxinterval / delta_t);
+          } else if (self.mininterval && delta_t) {
+            self.miniters = size_t(self.smoothing * delta_it *
+                                       self.mininterval / delta_t +
+                                   (1 - self.smoothing) * self.miniters);
           } else {
-            self.miniters = self.smoothing * delta_it +
-                            (1 - self.smoothing) * self.miniters;
+            self.miniters = size_t(self.smoothing * delta_it +
+                                   (1 - self.smoothing) * self.miniters);
           }
         }
 

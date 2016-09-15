@@ -11,21 +11,6 @@ There also exists an ad-hoc
 [chat room](http://chat.stackexchange.com/rooms/43704/tqdm-cpp)
 for discussion on small issues.
 
-
-# TODO
-
-Ranked by priority
-
-- handle s(tep) with operator+/-(=)
-- support all `Params` (starting with file descriptor output)
-- fix potential range update bug
-- anon namespaces
-- thread safety
-- coverage reporting
-- release 0.0.1-py4.8.4 (includes based-on-tqdm.py version)
-- reverse iterators
-
-
 # Building
 
 To build and test on any system and IDE, use `CMake`.

@@ -31,7 +31,9 @@ Usage:
 #include <type_traits>  // is_pointer, ...
 #include <utility>      // swap
 #include <functional>   // function
-// #include <wchar.h>      // wchar_t (TODO: stdafx, use for unicode!)
+#include <iostream>
+#include <iomanip>
+#include <sstream>
 #include "tqdm/utils.h"
 
 namespace tqdm {
@@ -131,17 +133,11 @@ protected:
         sp["\n"];
   }
 
-  template <typename String,
-            typename = typename std::enable_if<
-                std::is_same<String, std::string>::value ||
-                std::is_same<String, std::wstring>::value>::type>
-  // TODO
-  static String format_meter(difference_type n, difference_type total,
-                             float elapsed, int ncols, const String &prefix,
-                             const String &ascii, const String &unit,
+static std::string format_meter(difference_type n, difference_type total,
+                             float elapsed, int ncols, const std::string &prefix,
+                             const std::string &ascii, const std::string &unit,
                              bool unit_scale, float rate,
-                             const String &bar_format) {
-    typedef typename String::value_type Char;
+                             const std::string &bar_format) {
     // sanity check: total
     if (n > total)
       total = -1;
@@ -194,13 +190,13 @@ protected:
           rate <= 0 ? "?" : format_interval(size_t((total - n) / rate));
 
       // format the stats displayed to the left and right sides of the bar
-      String l_bar;
+      std::string l_bar;
       char reserve[256];
       sprintf_s(reserve, "%s%3.0f%%%s",
                 prefix.empty() ? "" : (prefix + ": ").c_str(), percentage,
                 ncols > 0 ? "|" : "");
       l_bar = reserve;
-      String r_bar = String(ncols > 0 ? "|" : "") + " " + n_fmt + "/" +
+      std::string r_bar = std::string(ncols > 0 ? "|" : "") + " " + n_fmt + "/" +
                      total_fmt + " [" + elapsed_str + "<" + remaining_str +
                      ", " + rate_fmt + "]";
       if (ncols <= 0)
@@ -251,33 +247,41 @@ protected:
               : 10;
 
       int bar_length, frac_bar_length;
-      String bar;
-      Char frac_bar;
+      std::string bar;
+      std::string frac_bar;
       // format bar depending on availability of unicode/ascii chars
       if (!ascii.empty()) {
         std::tie(bar_length, frac_bar_length) =
             divmod(int(frac * N_BARS * int(ascii.size() - 1)),
                    int(ascii.size() - 1));
 
-        bar = String(bar_length, Char(ascii.back()));
+        bar = std::string(bar_length, ascii.back());
         frac_bar = frac_bar_length ? 48 + frac_bar_length : ' ';
       } else {
         std::tie(bar_length, frac_bar_length) =
             divmod(int(frac * N_BARS * 8), 8);
 
-        bar = String(bar_length, Char(0x2588));
-        frac_bar = frac_bar_length ? Char(0x2590 - frac_bar_length) : ' ';
+        for (int i = 0; i < bar_length; ++i) {
+          bar += "\u2588";
+        }
+        if (frac_bar_length) {
+          char u[4] = "\u2590";
+          u[2] -= frac_bar_length;
+          frac_bar = u;
+        } else {
+          frac_bar = ' ';
+        }
       }
-      String full_bar;
+      std::string full_bar;
       // whitespace padding
       if (bar_length < N_BARS)
         full_bar = bar + frac_bar +
-                   String(std::max(N_BARS - bar_length - 1, 0), ' ');
+                   std::string(std::max(N_BARS - bar_length - 1, 0), ' ');
       else
-        full_bar = bar + String(std::max(N_BARS - bar_length, 0), ' ');
+        full_bar = bar + std::string(std::max(N_BARS - bar_length, 0), ' ');
 
       // Piece together the bar parts
-      return String(l_bar.c_str()) + full_bar + r_bar;
+      return std::string(l_bar.c_str()) + full_bar + r_bar;
     }
   }
 
@@ -401,7 +405,7 @@ public:
       throw std::out_of_range(
           "exhausted");  // TODO: don't throw, just double total
     if (n < 0) {
-      printf("n (%s) cannot be negative", _s(n));
+      std::cerr << "n (" << n << ") cannot be negative";
       throw std::out_of_range("negative step in forward iterator");
     } else if (!n)
       return;

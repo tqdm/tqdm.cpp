@@ -28,7 +28,7 @@ int main() {
     // if (i) printf("\r%d", i);
     if (i < 0)
       printf(" \b");
-
+  {
   tqdm::Params p;
   p.desc = "range-based array";
   p.miniters = 1;
@@ -39,10 +39,19 @@ int main() {
   for (auto &i : tqdm::tqdm(a, p))
     if (i < 0)
       printf(" \b");
+  }
+  tqdm::Params p;
+  p.desc = "range-based array (unicode)";
+  p.ascii = "";
+  p.dynamic_ncols = true;
+  for (auto &i : tqdm::tqdm(a, p)) {
+    if (i < 0)
+      printf(" \b");
+  }
 
   printf("iterator-based pythonic range()\n");
   for (auto it = tqdm::range(N); !it.ended(); ++it)
-    ;
+      ;
 
   printf("ye moste pythonic range(), auto type inference\n");
   float m = 2, n = float(N), s = 2;

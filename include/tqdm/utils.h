@@ -110,15 +110,6 @@ inline T diff(const time_point &to, const time_point &from) {
   return std::chrono::duration_cast<duration<T>>(to - from).count();
 }
 
-#ifndef _s
-/**
-Converts anything to a c-string.
-* TODO: could this cause a memory leak?
-@author Casper da Costa-Luis
-*/
-#define _s(obj) std::to_string(obj).c_str()
-#endif  // _S
-
 template <typename _Iterator>
 /**
 Wrapper for pointers and std containter iterators.

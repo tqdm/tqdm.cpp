@@ -270,19 +270,15 @@ public:
     return (total - current) / step;
   }
 
-  /** here be dragons */
   inline bool operator==(const RangeIterator &rhs) const {
-    return current == rhs.total;
+    return current == rhs.current;
   }
   inline bool operator<(const RangeIterator &rhs) const {
-    return current < rhs.total;
+    return current < rhs.current;
   }
   inline noconst_value_type operator-(const RangeIterator &rhs) const {
-    // it's used in `end - begin`, but `end` is only a sentinel
-    // so let's use `begin `to be consistent
-    return rhs.size_remaining();
+    return current - rhs.current;
   }
-  /** end of dubious section */
 
   inline bool operator!=(const RangeIterator &rhs) const {
     return !(*this == rhs);

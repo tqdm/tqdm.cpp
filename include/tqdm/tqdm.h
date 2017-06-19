@@ -498,19 +498,19 @@ template <typename SizeType = int>
 using RangeTqdm = Tqdm<RangeIterator<SizeType>>;
 template <typename SizeType>
 RangeTqdm<SizeType> range(SizeType n, Params p = Params()) {
-  return RangeTqdm<SizeType>(RangeIterator<SizeType>(n),
-                             RangeIterator<SizeType>(n), p);
+return RangeTqdm<SizeType>(RangeIterator<SizeType>(0, n),
+                           RangeIterator<SizeType>(n, n), p);
 }
 template <typename SizeType>
 RangeTqdm<SizeType> range(SizeType start, SizeType end, Params p = Params()) {
   return RangeTqdm<SizeType>(RangeIterator<SizeType>(start, end),
-                             RangeIterator<SizeType>(start, end), p);
+                             RangeIterator<SizeType>(end, end), p);
 }
 template <typename SizeType>
 RangeTqdm<SizeType> range(SizeType start, SizeType end, SizeType step,
                           Params p = Params()) {
   return RangeTqdm<SizeType>(RangeIterator<SizeType>(start, end, step),
-                             RangeIterator<SizeType>(start, end, step), p);
+                             RangeIterator<SizeType>(end, end, step), p);
 }
 
 }  // tqdm

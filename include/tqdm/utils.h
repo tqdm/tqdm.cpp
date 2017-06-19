@@ -110,15 +110,6 @@ inline T diff(const time_point &to, const time_point &from) {
   return std::chrono::duration_cast<duration<T>>(to - from).count();
 }
 
-#ifndef _s
-/**
-Converts anything to a c-string.
-* TODO: could this cause a memory leak?
-@author Casper da Costa-Luis
-*/
-#define _s(obj) std::to_string(obj).c_str()
-#endif  // _S
-
 template <typename _Iterator>
 /**
 Wrapper for pointers and std containter iterators.
@@ -279,19 +270,15 @@ public:
     return (total - current) / step;
   }
 
-  /** here be dragons */
   inline bool operator==(const RangeIterator &rhs) const {
-    return current == rhs.total;
+    return current == rhs.current;
   }
   inline bool operator<(const RangeIterator &rhs) const {
-    return current < rhs.total;
+    return current < rhs.current;
   }
   inline noconst_value_type operator-(const RangeIterator &rhs) const {
-    // it's used in `end - begin`, but `end` is only a sentinel
-    // so let's use `begin `to be consistent
-    return rhs.size_remaining();
+    return current - rhs.current;
   }
-  /** end of dubious section */
 
   inline bool operator!=(const RangeIterator &rhs) const {
     return !(*this == rhs);

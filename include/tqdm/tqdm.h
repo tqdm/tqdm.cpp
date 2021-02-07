@@ -119,7 +119,9 @@ public:
 
     TQDM_IT::_incr();
     if (this->get() == e) {
-      printf("\nfinished: %" PRIu64 "/%" PRIu64 "\n", self.total, self.total);
+      printf("\nfinished: %" PRIu64 "/%" PRIu64 "\n",
+        static_cast<std::uint64_t>(self.total),
+        static_cast<std::uint64_t>(self.total));
     } else
       printf("\r%" PRIi64 " left", (int64_t)(e - this->get()));
   }

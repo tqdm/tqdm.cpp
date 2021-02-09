@@ -1,6 +1,66 @@
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 2.8...3.13)
 
 project(tqdm)
+
+# Find version
+
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/include/tqdm/tqdm.h" tqdm_version_defines
+     REGEX "#define TQDM_VERSION_(MAJOR|MINOR|PATCH)")
+
+foreach(ver ${tqdm_version_defines})
+    if(ver MATCHES "#define TQDM_VERSION_(MAJOR|MINOR|PATCH) +([^ ]+)$")
+        set(TQDM_VERSION_${CMAKE_MATCH_1}
+            "${CMAKE_MATCH_2}"
+            CACHE INTERNAL "")
+    endif()
+endforeach()
+
+set(TQDM_VERSION ${TQDM_VERSION_MAJOR}.${TQDM_VERSION_MINOR}.${TQDM_VERSION_PATCH})
+
+message(STATUS "Building tqdm v${TQDM_VERSION}")
+
+# Set target
+
+add_library(tqdm.cpp INTERFACE)
+
+# set_target_properties(tdqm.cpp PROPERTIES OUTPUT_NAME tqdm)
+
+target_include_directories(tqdm.cpp INTERFACE
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+
+# Installation
+
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
+
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION include)
+
+install(TARGETS tqdm.cpp EXPORT tqdm-targets)
+
+install(
+    EXPORT tqdm-targets
+    FILE tqdmTargets.cmake
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/tqdm")
+
+set(_TQDM ${CMAKE_SIZEOF_VOID_P})
+unset(CMAKE_SIZEOF_VOID_P)
+
+write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/tqdmConfigVersion.cmake"
+    VERSION ${TQDM_VERSION}
+    COMPATIBILITY AnyNewerVersion)
+
+set(CMAKE_SIZEOF_VOID_P ${_TQDM})
+
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/tqdmConfig.cmake"
+              "${CMAKE_CURRENT_BINARY_DIR}/tqdmConfigVersion.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/tqdm")
+
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/tqdm.pc.in"
+               "${CMAKE_CURRENT_BINARY_DIR}/tqdm.pc" @ONLY)
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/tqdm.pc"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig/")
 
 # so we can set up visual studio "folders"
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -124,7 +184,7 @@ endif()
 
 ## target_link_libraries(tqdm)
 
-if(UNIX)
+if(UNIX AND NOT APPLE)
 
 macro(STRIP_FMT TARG STRIP_FMT_TARG STRIP_FMT_DEPS)
   if(CMAKE_COMPILER_IS_GNUCXX)
@@ -147,7 +207,7 @@ STRIP_FMT(     tqdm "$<TARGET_FILE:tqdm>"      "${TQDM_BIN_FILES}")
 STRIP_FMT(test_tqdm "$<TARGET_FILE:test_tqdm>" "${TQDM_TEST_FILES}")
 STRIP_FMT(tqdmlib   "$<TARGET_FILE:tqdmlib>"   "${TQDM_LIB_FILES}")
 
-endif(UNIX)
+endif()
 
 add_custom_command(
   TARGET test_tqdm

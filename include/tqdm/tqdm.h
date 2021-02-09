@@ -36,6 +36,10 @@ Usage:
 #include <utility>      // swap
 #include "tqdm/utils.h"
 
+#define TQDM_VERSION_MAJOR 0
+#define TQDM_VERSION_MINOR 0
+#define TQDM_VERSION_PATCH 0
+
 #ifndef SIZE_T_MAX
 constexpr size_t SIZE_T_MAX = std::numeric_limits<size_t>::max();
 #endif

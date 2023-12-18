@@ -155,11 +155,11 @@ private:
   IntType step;
 
 public:
-  RangeIterator(IntType total) : current(0), total(total), step(1) {}
-  RangeIterator(IntType start, IntType total)
-      : current(start), total(total), step(1) {}
-  RangeIterator(IntType start, IntType total, IntType step)
-      : current(start), total(total), step(step) {}
+  RangeIterator(IntType total_) : current(0), total(total_), step(1) {}
+  RangeIterator(IntType start, IntType total_)
+      : current(start), total(total_), step(1) {}
+  RangeIterator(IntType start_, IntType total_, IntType step_)
+      : current(start_), total(total_), step(step_) {}
   IntType &operator*() { return current; }
   const IntType &operator*() const { return current; }
   RangeIterator &operator++() {
@@ -312,7 +312,7 @@ struct SinkOptions {
   int tty_height;
 
   // Additional options will be added in future.
-  SinkOptions(int fd) : fd(fd){};
+  SinkOptions(int fd_) : fd(fd_){};
 };
 
 class Sink;
